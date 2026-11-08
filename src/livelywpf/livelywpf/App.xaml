@@ -9,8 +9,6 @@
   
     <Application.Resources>
         <ResourceDictionary>
-            <local:NullConverterXaml x:Key="nullConverter"/>
-
             <ResourceDictionary.MergedDictionaries>
                 <!-- MahApps.Metro resource dictionaries. Make sure that all file names are Case Sensitive! -->
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
@@ -22,6 +20,8 @@
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/BaseDark.xaml" />
 
             </ResourceDictionary.MergedDictionaries>
+
+            <local:NullConverterXaml x:Key="nullConverter"/>
         
             <!-- BARQ-inspired identity; this is a scalable vector trace of the user-supplied flower mark. -->
             <SolidColorBrush x:Key="AMBackground" Color="#0F1115"/>

@@ -47,7 +47,10 @@ jobs:
           # rocksdanister/lively currently redirects this historical release to lively-community/lively.
           Invoke-WebRequest 'https://github.com/lively-community/lively/releases/download/v0.9.6.0/lively_portable_x86_full_v0960.zip' -OutFile $archive -UseBasicParsing
           if ((Get-Item $archive).Length -ne 120774111) { throw 'Unexpected original release asset size' }
-          Get-FileHash $archive -Algorithm SHA256 | Format-List
+          # SHA256 observed from the exact official v0.9.6.0 release asset.
+          $sha256 = (Get-FileHash $archive -Algorithm SHA256).Hash
+          if ($sha256 -ne '72BC44092887320897D2AF7A43BFF63CD0998E19A4C5A3ABFC6B930ADE776D84') { throw 'Original portable SHA256 mismatch' }
+          Write-Host "Verified official portable SHA256: $sha256"
           Expand-Archive $archive "$env:RUNNER_TEMP\lively0960"
           $original = @(Get-ChildItem "$env:RUNNER_TEMP\lively0960" -Filter livelywpf.exe -Recurse -File)
           if ($original.Count -ne 1) { throw 'Expected exactly one original application' }

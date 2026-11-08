@@ -15,9 +15,14 @@ $v=[Diagnostics.FileVersionInfo]::GetVersionInfo("$OriginalPortable\livelywpf.ex
 $assemblyVersion=[Reflection.AssemblyName]::GetAssemblyName("$OriginalPortable\livelywpf.exe").Version.ToString()
 if($assemblyVersion -ne '0.9.6.0'){throw "Wrong upstream version: $assemblyVersion"}
 if(!(Test-Path "$OriginalPortable\external\cef\LivelyCefSharp.exe")){throw 'Original CefSharp runtime missing. Do not replace it with a newer release.'}
-$cef="$OriginalPortable\external\cef\CefSharp.Core.dll"
-if(!(Test-Path $cef)){throw 'CefSharp.Core.dll missing.'}
-if(([Diagnostics.FileVersionInfo]::GetVersionInfo($cef).FileVersion) -notlike '81.3.100*'){throw 'Expected upstream CefSharp 81.3.100; refuse a runtime upgrade.'}
+# The v0.9.6.0 portable layout is authoritative: a CefSharp.Core.dll sidecar
+# is not guaranteed to be in external\\cef. Never add or upgrade a missing DLL.
+# The download is SHA256-pinned in CI; all external runtime bytes are verified after staging.
+$cefCandidates = @(Get-ChildItem "$OriginalPortable\external" -Recurse -File -Filter 'CefSharp.Core.dll')
+foreach($cef in $cefCandidates) {
+ if(([Diagnostics.FileVersionInfo]::GetVersionInfo($cef.FullName).FileVersion) -notlike '81.3.100*'){throw "Unexpected upstream CefSharp runtime version: $($cef.FullName)"}
+}
+Write-Host "Official CEF runtime files: $(@(Get-ChildItem "$OriginalPortable\external\cef" -File -Recurse).Count); CefSharp.Core.dll sidecars: $($cefCandidates.Count)"
 & $NuGet restore "$root\src\livelywpf\livelywpf.sln" -NonInteractive
 if($LASTEXITCODE -ne 0){throw 'NuGet restore failed.'}
 New-Item -ItemType Directory -Force "$root\dist" | Out-Null

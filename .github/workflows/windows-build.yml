@@ -31,54 +31,30 @@ jobs:
           if (!(Test-Path $msbuild)) { throw 'VS 2019 MSBuild not installed' }
           & $msbuild -version
           if ($LASTEXITCODE -ne 0) { throw 'MSBuild verification failed' }
-      - name: Download pinned NuGet and Inno Setup
+      - name: Verify preinstalled NuGet and Inno Setup 6
         run: |
           $ErrorActionPreference = 'Stop'
-          function Invoke-RetryDownload([string]$url, [string]$destination) {
-            for ($attempt = 1; $attempt -le 4; $attempt++) {
-              try {
-                Invoke-WebRequest -Uri $url -OutFile $destination -UseBasicParsing -TimeoutSec 240
-                if (-not (Test-Path $destination) -or (Get-Item $destination).Length -eq 0) { throw 'Download is empty' }
-                return
-              } catch {
-                Remove-Item $destination -Force -ErrorAction SilentlyContinue
-                if ($attempt -eq 4) { throw }
-                Write-Warning "Download attempt $attempt failed: $($_.Exception.Message). Retrying..."
-                Start-Sleep -Seconds (10 * $attempt)
-              }
-            }
-          }
-          Invoke-RetryDownload 'https://dist.nuget.org/win-x86-commandline/v5.8.1/nuget.exe' "$env:RUNNER_TEMP\nuget.exe"
-          $inno = "$env:RUNNER_TEMP\innosetup-6.2.2.exe"
-          $innoSHA = '8117D10D00A2AD33A1390978EA3872861C330E087914410A6377B22C4C5B8563'
-          # Primary mirror is maintained by the Inno Setup publisher. GitHub is only a fallback.
-          # Never accept a file from either host unless it matches our pinned digest.
-          $urls = @(
-            'https://files.jrsoftware.org/is/6/innosetup-6.2.2.exe',
-            'https://github.com/jrsoftware/issrc/releases/download/is-6_2_2/innosetup-6.2.2.exe'
+          # windows-2022 already ships NuGet and Inno Setup 6.
+          # Using the runner's installed tools avoids unreliable historical release downloads.
+          $nugetCommand = Get-Command 'nuget.exe' -ErrorAction SilentlyContinue
+          if ($null -eq $nugetCommand) { throw 'NuGet.exe is missing from windows-2022 runner.' }
+          $nuget = $nugetCommand.Source
+          & $nuget help | Select-Object -First 3
+          if ($LASTEXITCODE -ne 0) { throw 'Preinstalled NuGet failed to execute.' }
+          $innoCandidates = @(
+            "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe",
+            "$env:ProgramFiles\Inno Setup 6\ISCC.exe",
+            'C:\ProgramData\chocolatey\bin\ISCC.exe'
           )
-          $verified = (Test-Path $inno) -and ((Get-FileHash $inno -Algorithm SHA256).Hash -eq $innoSHA)
-          if (-not $verified) {
-            foreach ($url in $urls) {
-              for ($attempt = 1; $attempt -le 3; $attempt++) {
-                try {
-                  Invoke-WebRequest -Uri $url -OutFile $inno -UseBasicParsing -TimeoutSec 240
-                  if ((Get-FileHash $inno -Algorithm SHA256).Hash -ne $innoSHA) { throw 'Downloaded Inno Setup checksum mismatch' }
-                  Write-Host "Verified Inno Setup 6.2.2 from $url"
-                  $verified = $true
-                  break
-                } catch {
-                  Remove-Item $inno -Force -ErrorAction SilentlyContinue
-                  Write-Warning "Inno Setup download failed (attempt $attempt): $($_.Exception.Message)"
-                  if ($attempt -lt 3) { Start-Sleep -Seconds (10 * $attempt) }
-                }
-              }
-              if ($verified) { break }
-            }
-          }
-          if (-not $verified) { throw 'Inno Setup 6.2.2 could not be downloaded and checksum-verified from either official source.' }
-          $process = Start-Process $inno -ArgumentList '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP- /DIR=C:\AM-Inno622' -Wait -PassThru
-          if ($process.ExitCode -ne 0) { throw "Inno Setup install failed: $($process.ExitCode)" }
+          $innoCommand = Get-Command 'ISCC.exe' -ErrorAction SilentlyContinue
+          if ($null -ne $innoCommand) { $innoCandidates += $innoCommand.Source }
+          $inno = $innoCandidates | Where-Object { $_ -and (Test-Path -LiteralPath $_ -PathType Leaf) } | Select-Object -First 1
+          if (-not $inno) { throw 'Preinstalled Inno Setup 6 compiler (ISCC.exe) is missing.' }
+          Write-Host "NuGet: $nuget"
+          Write-Host "Inno compiler: $inno"
+          Write-Host "Inno version: $([Diagnostics.FileVersionInfo]::GetVersionInfo($inno).ProductVersion)"
+          "AM_NUGET=$nuget" | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+          "AM_INNO=$inno" | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
       - name: Restore verified legacy runtime from cache
         id: legacy-runtime
         uses: actions/cache/restore@v4
@@ -138,7 +114,7 @@ jobs:
           key: lively-0.9.6.0-x86-72BC44092887320897D2AF7A43BFF63CD0998E19A4C5A3ABFC6B930ADE776D84
       - name: Build, test and package x86
         run: |
-          .\build\Build-Windows.ps1 -OriginalPortable $env:AM_ORIGINAL -NuGet "$env:RUNNER_TEMP\nuget.exe" -MSBuild 'C:\AM-BuildTools2019\MSBuild\Current\Bin\MSBuild.exe' -Inno 'C:\AM-Inno622\ISCC.exe' -Installer
+          .\build\Build-Windows.ps1 -OriginalPortable $env:AM_ORIGINAL -NuGet $env:AM_NUGET -MSBuild 'C:\AM-BuildTools2019\MSBuild\Current\Bin\MSBuild.exe' -Inno $env:AM_INNO -Installer
       - name: Read-only Windows process smoke test
         run: |
           .\build\Test-Snapshot.ps1 -Compiler 'C:\AM-BuildTools2019\MSBuild\Current\Bin\Roslyn\csc.exe'

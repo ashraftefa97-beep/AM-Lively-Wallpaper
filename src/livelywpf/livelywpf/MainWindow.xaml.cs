@@ -3894,7 +3894,7 @@ namespace livelywpf
                     throw new FileNotFoundException("Legal file is not installed", location);
                 // Notepad is available on Windows 8.1 even when .md has no file association.
                 Process.Start(new ProcessStartInfo("notepad.exe") {
-                    Arguments = "\\\"" + location + "\\\"", UseShellExecute = true
+                    Arguments = "\"" + location + "\"", UseShellExecute = true
                 });
             }
             catch (Exception ex)

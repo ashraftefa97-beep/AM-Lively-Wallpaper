@@ -17,4 +17,9 @@ $voiceSource="$root\src\livelywpf\livelywpf\Voice"
 if($LASTEXITCODE -ne 0){throw 'BARQ voice command tests did not compile.'}
 & "$out\BarqVoiceCommandTests.exe"
 if($LASTEXITCODE -ne 0){throw 'BARQ voice command tests failed.'}
+# Offline BARQ question and source-parsing tests, no live internet required in CI.
+& $Compiler /nologo /target:exe "/out:$out\BarqSearchTests.exe" /r:System.Net.Http.dll /r:System.Xml.Linq.dll /r:System.Xml.dll "$voiceSource\BarqQuestionParser.cs" "$voiceSource\BarqWebSearch.cs" "$root\tests\BarqSearchTests.cs"
+if($LASTEXITCODE -ne 0){throw 'BARQ internet search tests failed to compile.'}
+& "$out\BarqSearchTests.exe"
+if($LASTEXITCODE -ne 0){throw 'BARQ internet search tests failed.'}
 Write-Host 'Policy tests and engine compilation passed. These do not replace Windows 8.1 integration tests.'

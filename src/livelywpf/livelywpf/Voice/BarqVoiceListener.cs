@@ -12,12 +12,17 @@ namespace livelywpf.Voice
     {
         private SpeechRecognitionEngine engine;
         private readonly Action<BarqVoiceCommand> onCommand;
+        private readonly Action<string> onQuestion;
+        internal volatile bool SuppressRecognition;
+        internal bool DictationAvailable { get; private set; }
+        internal System.Globalization.CultureInfo RecognizerCulture { get; private set; }
         private volatile bool enabled;
 
-        internal BarqVoiceListener(Action<BarqVoiceCommand> onCommand)
+        internal BarqVoiceListener(Action<BarqVoiceCommand> onCommand, Action<string> onQuestion)
         {
             if (onCommand == null) throw new ArgumentNullException("onCommand");
             this.onCommand = onCommand;
+            this.onQuestion = onQuestion;
         }
 
         internal string Start()
@@ -40,11 +45,22 @@ namespace livelywpf.Voice
                 var builder = new GrammarBuilder { Culture = info.Culture };
                 builder.Append(choices);
                 candidate.LoadGrammar(new Grammar(builder) { Name = "BARQ Lively commands" });
+                // Dictation is optional: some Windows 8.1 speech engines only accept fixed grammars.
+                try
+                {
+                    candidate.LoadGrammar(new DictationGrammar { Name = "BARQ information questions" });
+                    DictationAvailable = true;
+                }
+                catch (Exception)
+                {
+                    DictationAvailable = false;
+                }
                 candidate.SpeechRecognized += Recognized;
                 candidate.SetInputToDefaultAudioDevice();
                 enabled = true;
                 candidate.RecognizeAsync(RecognizeMode.Multiple);
                 engine = candidate;
+                RecognizerCulture = info.Culture;
                 return info.Culture.DisplayName;
             }
             catch
@@ -58,10 +74,22 @@ namespace livelywpf.Voice
 
         private void Recognized(object sender, SpeechRecognizedEventArgs e)
         {
-            if (!enabled || e.Result == null || e.Result.Confidence < 0.84f) return;
+            if (!enabled || SuppressRecognition || e.Result == null) return;
             BarqVoiceCommand command;
-            if (BarqVoiceCommands.TryParse(e.Result.Text, out command))
+            if (e.Result.Confidence >= 0.84f &&
+                BarqVoiceCommands.TryParse(e.Result.Text, out command))
+            {
                 onCommand(command);
+                return;
+            }
+            if (DictationAvailable && onQuestion != null &&
+                e.Result.Confidence >= 0.62f && e.Result.Grammar != null &&
+                e.Result.Grammar.Name == "BARQ information questions")
+            {
+                string query;
+                if (BarqQuestionParser.TryExtract(e.Result.Text, out query))
+                    onQuestion(query);
+            }
         }
 
         public void Dispose()

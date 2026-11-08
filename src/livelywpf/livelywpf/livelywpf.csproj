@@ -453,6 +453,9 @@
     </Compile>
     <Compile Include="Voice\BarqVoiceCommands.cs" />
     <Compile Include="Voice\BarqVoiceListener.cs" />
+    <Compile Include="Voice\BarqQuestionParser.cs" />
+    <Compile Include="Voice\BarqWebSearch.cs" />
+    <Compile Include="Voice\BarqVoiceSpeaker.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

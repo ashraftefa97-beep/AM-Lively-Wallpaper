@@ -1,43 +1,46 @@
-# BARQ Voice — AM Lively Wallpaper (Windows 8.1 x86)
+# BARQ Voice for AM Lively Wallpaper — Windows 8.1 x86
 
-This is an **opt-in, offline, fixed-command voice controller** for AM Lively Wallpaper, not BARQ AI's full conversational assistant. It uses the Windows speech engine available to **.NET Framework 4.7.2** through `System.Speech`, with no downloads, external voice APIs, credentials or background service.
+## What this does
 
-## Activate
+BARQ Voice is optional, starts only from the Windows system-tray icon, and uses Windows' local speech recognition and text-to-speech via `System.Speech` on .NET Framework 4.7.2.
 
-1. Connect a microphone and configure the Windows Speech Recognition engine, if available.
-2. Start AM Lively Wallpaper. Right-click its icon near the Windows clock.
-3. Select **BARQ Voice - Start listening**. The menu shows the selected recognition language.
-4. Say the wake word and one complete command. Choose **Stop listening** to release the microphone.
-5. Listening is OFF by default, and stops on app exit. Closing the window to tray retains the opt-in session until explicitly stopped or exit.
+It can execute the existing Lively-only commands and, with a *dictation-capable recognizer*, answer short factual questions from internet search snippets **out loud**. It is not BARQ's full conversational AI or a locally-running large language model.
 
-## Supported phrases
+## Start and stop
 
-| English recognizer | Arabic recognizer (only if installed) | Action |
-|---|---|---|
-| barq open library | برق افتح المكتبة | Open Library |
-| barq open settings | برق افتح الإعدادات | Open Settings |
-| barq show processes | برق افتح العمليات | Open Processes (no process stopping) |
-| barq add wallpaper | برق إضافة خلفية | Open the wallpaper-type page |
-| barq pause wallpapers | برق وقف الخلفيات | Pause all wallpapers |
-| barq resume wallpapers | برق شغل الخلفيات | Resume all wallpapers |
-| barq import wallpaper | برق استورد خلفية | Open the existing ZIP import dialog |
-| barq apply selected wallpaper | برق طبق الخلفية | Apply selected wallpaper using existing dialogs and warnings |
-| barq show about | برق افتح حول البرنامج | Open About |
+Right-click the AM Lively Wallpaper icon near the clock and choose **BARQ Voice - Start listening**. Select **Stop listening** to release the microphone. Voice stays OFF by default after app launch, with no new microphone icon in the main UI. Exit disposes audio resources.
 
-Alternate English phrases are in `Voice/BarqVoiceCommands.cs`.
+Arabic speech recognition **requires an actual Arabic speech recognition engine installed in Windows**. The Arabic display language is insufficient. English speech recognition is used as a fallback. If dictation grammar is unsupported, Lively's fixed commands still work, but questions cannot be recognized.
 
-**Known limits:** This implementation is not conversational, does not identify speakers, and does not synthesize a male Egyptian voice. Arabic command recognition requires an *installed Arabic speech recognition engine*, not merely the Arabic Windows UI language or .NET Arabic language pack. If unavailable, the app falls back to installed English recognition. If neither is installed, voice cannot start and the tray menu reports an error. There is no automatic install of engines or cloud service.
+Spoken replies use an installed TTS voice. A male voice matching the recognizer language is preferred; **Egyptian male speech is not guaranteed**. Arabic spoken answers require Arabic TTS. Without a matching voice, only the written answer is displayed and a brief English explanation is spoken.
 
-The Processes tab continues to require its own existing safety approvals. Voice cannot kill processes, change protected settings, execute arbitrary commands or download software.
+## Examples
 
-## Test checklist for actual Windows 8.1 x86 device
+- «برق وقف الخلفيات» — pauses wallpaper playback
+- «برق شغل الخلفيات» — resumes playback
+- «برق افتح المكتبة» — opens Library
+- «برق ابحث عن الأقمار الصناعية» — searches for a public result and speaks a short sourced answer
+- “Barq who is Alan Turing?” — searches and speaks a short result
+- “Barq open search result” / «برق افتح نتيجة البحث» — opens the last source URL in the browser when explicitly requested
 
-- Confirm Windows Speech recognizer availability with microphone. Check enabled/disabled state in tray.
-- Test one recognized command in its own installed language; ensure commands without "barq"/"برق" are ignored.
-- Verify pause/resume twice each (idempotency) while wallpapers are active, and while window is hidden.
-- Verify Library, Add wallpaper, Settings, Processes and About navigation.
-- Import a ZIP; use Apply Selected on wallpaper requiring a confirmation and confirm the original prompt appears.
-- Stop listening and verify the microphone is released. Exit the app and verify no voice process remains.
-- Regression: wallpaper playback, fullscreen pause, multi-monitor, process safety/restore, and CPU/RAM usage in tray.
+Wallpaper and process logic is unchanged: processes cannot be killed by voice; applying a wallpaper keeps its original confirmation prompts.
 
-GitHub Actions compiles the app and runs parser tests, **but does not test microphone behavior or Windows 8.1 hardware**.
+## How internet search works
+
+1. The recognizer checks that the phrase starts with **Barq / برق** and matches an information-question prefix.
+2. Only the resulting question text (maximum 140 characters) is sent over HTTPS to Bing's public RSS search.
+3. If RSS is unavailable, the MediaWiki public Wikipedia search API is used as an alternative.
+4. A brief result snippet with its provider is spoken and shown in a notification; it is not a synthesized AI explanation or independently verified fact.
+5. Results can be incomplete or wrong. The user can explicitly request opening the source in a browser.
+
+There is no API key, subscription or audio upload. The two public search services require an internet connection, and availability is not guaranteed. No transcript history is saved by this feature.
+
+## Compatibility and test matrix
+
+- Target: Windows 8.1 x86, .NET Framework 4.7.2, MahApps.Metro 1.6.5.1.
+- Code: System.Speech, System.Net.Http and System.Xml.Linq from .NET Framework; no new NuGet dependency.
+- CI: project/installer build, existing process safety tests, wake-word parser tests, question parser tests, offline Bing RSS and Wikipedia XML tests.
+- Manual validation still needed on Windows 8.1: microphone, installed speech grammars, installed voices, full/partial playback, actual HTTPS lookup, tray hide/exit, CPU/RAM, multiple monitors, and process-approval prompts.
+- About page: the bulky license viewer is removed, but the actual **License.txt** and **NOTICE-AM.md** remain in the installation; two compact buttons open them.
+
+No guarantee of Egyptian Arabic recognition, native Arabic TTS availability, real-time web search uptime or full natural conversation is implied by a successful build.

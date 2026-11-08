@@ -9,7 +9,7 @@ namespace livelywpf.Voice
     internal enum BarqVoiceCommand
     {
         Library, Settings, Processes, AddWallpaper, PauseWallpapers,
-        ResumeWallpapers, ImportArchive, ApplySelected, About
+        ResumeWallpapers, ImportArchive, ApplySelected, About, OpenSearchResult
     }
 
     internal static class BarqVoiceCommands
@@ -31,7 +31,8 @@ namespace livelywpf.Voice
                 { "barq play wallpapers", BarqVoiceCommand.ResumeWallpapers },
                 { "barq import wallpaper", BarqVoiceCommand.ImportArchive },
                 { "barq apply selected wallpaper", BarqVoiceCommand.ApplySelected },
-                { "barq show about", BarqVoiceCommand.About }
+                { "barq show about", BarqVoiceCommand.About },
+                { "barq open search result", BarqVoiceCommand.OpenSearchResult }
             };
 
         // Only used when an Arabic-language Windows speech recognizer is installed.
@@ -46,7 +47,8 @@ namespace livelywpf.Voice
                 { "برق شغل الخلفيات", BarqVoiceCommand.ResumeWallpapers },
                 { "برق استورد خلفية", BarqVoiceCommand.ImportArchive },
                 { "برق طبق الخلفية", BarqVoiceCommand.ApplySelected },
-                { "برق افتح حول البرنامج", BarqVoiceCommand.About }
+                { "برق افتح حول البرنامج", BarqVoiceCommand.About },
+                { "برق افتح نتيجة البحث", BarqVoiceCommand.OpenSearchResult }
             };
 
         internal static string[] PhrasesForCulture(CultureInfo culture)

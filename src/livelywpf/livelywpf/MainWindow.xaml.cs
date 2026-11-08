@@ -47,6 +47,10 @@ namespace livelywpf
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
         // BARQ Voice is opt-in and scoped to Lively only; no microphone UI is added.
         private livelywpf.Voice.BarqVoiceListener barqVoiceListener;
+        private livelywpf.Voice.BarqVoiceSpeaker barqVoiceSpeaker;
+        private readonly livelywpf.Voice.BarqWebSearch barqWebSearch = new livelywpf.Voice.BarqWebSearch();
+        private bool barqWebBusy;
+        private string lastBarqResultUrl;
         private System.Windows.Forms.ToolStripMenuItem barqVoiceMenu;
 
 
@@ -1619,6 +1623,7 @@ namespace livelywpf
             {
                 // Stop audio capture before exiting; nothing is left listening.
                 StopBarqVoice();
+                barqWebSearch.Dispose();
                 //static event, otherwise memory leak.
                 SystemEvents.DisplaySettingsChanged -= SystemEvents_DisplaySettingsChanged;
 
@@ -3678,21 +3683,34 @@ namespace livelywpf
 
             try
             {
-                var listener = new livelywpf.Voice.BarqVoiceListener(ExecuteBarqVoiceCommand);
+                var listener = new livelywpf.Voice.BarqVoiceListener(
+                    ExecuteBarqVoiceCommand, HandleBarqVoiceQuestion);
                 string language;
                 try { language = listener.Start(); }
                 catch { listener.Dispose(); throw; }
+
+                livelywpf.Voice.BarqVoiceSpeaker speaker;
+                try
+                {
+                    speaker = new livelywpf.Voice.BarqVoiceSpeaker(listener.RecognizerCulture,
+                        suppress => listener.SuppressRecognition = suppress);
+                }
+                catch { listener.Dispose(); throw; }
+
                 barqVoiceListener = listener;
+                barqVoiceSpeaker = speaker;
                 barqVoiceMenu.Checked = true;
                 barqVoiceMenu.Text = "BARQ Voice - Stop listening (" + language + ")";
-                _notifyIcon.ShowBalloonTip(3500, "BARQ Voice",
-                    "Listening for BARQ wallpaper commands (" + language + ").", System.Windows.Forms.ToolTipIcon.Info);
+                barqVoiceMenu.ToolTipText = listener.DictationAvailable
+                    ? "Wallpaper commands and optional spoken internet answers; microphone ON."
+                    : "Wallpaper commands only; this speech engine cannot recognize free-form questions.";
+                SayBarq("Voice control is ready. You can request a wallpaper action or ask a question.",
+                        "أنا سامعك. اطلب خلفية أو اسألني عن معلومة.");
             }
             catch (Exception ex)
             {
-                barqVoiceMenu.Checked = false;
-                barqVoiceMenu.Text = "BARQ Voice - Start listening";
-                Logger.Warn(ex, "BARQ Voice could not start.");
+                StopBarqVoice();
+                Logger.Warn(ex, "BARQ voice could not start.");
                 _notifyIcon.ShowBalloonTip(6500, "BARQ Voice unavailable",
                     ex.Message, System.Windows.Forms.ToolTipIcon.Warning);
             }
@@ -3703,14 +3721,78 @@ namespace livelywpf
             if (barqVoiceListener != null)
             {
                 try { barqVoiceListener.Dispose(); }
-                catch (Exception ex) { Logger.Warn(ex, "BARQ Voice stop failure."); }
+                catch (Exception ex) { Logger.Warn(ex, "BARQ voice recognition stop failed."); }
                 barqVoiceListener = null;
             }
+            if (barqVoiceSpeaker != null)
+            {
+                try { barqVoiceSpeaker.Dispose(); }
+                catch (Exception ex) { Logger.Warn(ex, "BARQ voice speaker stop failed."); }
+                barqVoiceSpeaker = null;
+            }
+            lastBarqResultUrl = null;
             if (barqVoiceMenu != null)
             {
                 barqVoiceMenu.Checked = false;
                 barqVoiceMenu.Text = "BARQ Voice - Start listening";
+                barqVoiceMenu.ToolTipText = "Microphone OFF; enable for voice commands and information questions.";
             }
+        }
+
+        private void SayBarq(string english, string arabic = null)
+        {
+            try
+            {
+                if (barqVoiceSpeaker != null) barqVoiceSpeaker.Say(english, arabic);
+            }
+            catch (Exception ex) { Logger.Warn(ex, "BARQ voice audio output failed."); }
+        }
+
+        private void HandleBarqVoiceQuestion(string query)
+        {
+            if (_isExit || Dispatcher.HasShutdownStarted) return;
+            Dispatcher.BeginInvoke(new Action(async () => await AnswerBarqVoiceQuestionAsync(query)));
+        }
+
+        private async System.Threading.Tasks.Task AnswerBarqVoiceQuestionAsync(string query)
+        {
+            if (_isExit || barqVoiceListener == null || barqWebBusy) return;
+            barqWebBusy = true;
+            var activeListener = barqVoiceListener;
+            bool arabic = activeListener.RecognizerCulture != null &&
+                          activeListener.RecognizerCulture.TwoLetterISOLanguageName == "ar";
+            SayBarq("Searching for information online.", "بدور على المعلومة على الإنترنت.");
+            try
+            {
+                var result = await barqWebSearch.SearchAsync(query, arabic);
+                if (_isExit || activeListener != barqVoiceListener) return;
+
+                lastBarqResultUrl = result.Found &&
+                    livelywpf.Voice.BarqWebSearch.IsSafeResultUrl(result.Url) ? result.Url : null;
+
+                if (result.Found && barqVoiceSpeaker != null)
+                    barqVoiceSpeaker.SayAnswer(result);
+                else
+                    SayBarq("I couldn't retrieve a reliable search result. Please try again.",
+                            "ملقتش نتيجة موثوقة دلوقتي. جرب سؤال تاني.");
+
+                string visible = (result.Found ? result.Provider + ": " : "") + result.Text;
+                if (visible.Length > 180) visible = visible.Substring(0, 177) + "...";
+                string title = result.Found
+                    ? "BARQ - " + result.Title.Substring(0, Math.Min(result.Title.Length, 35))
+                    : "BARQ - Search";
+                _notifyIcon.ShowBalloonTip(6000, title, visible,
+                    result.Found ? System.Windows.Forms.ToolTipIcon.Info :
+                                   System.Windows.Forms.ToolTipIcon.Warning);
+            }
+            catch (Exception ex)
+            {
+                Logger.Warn(ex, "BARQ online information lookup failed.");
+                if (!_isExit && activeListener == barqVoiceListener)
+                    SayBarq("Online search is not available right now.",
+                            "البحث على الإنترنت مش متاح دلوقتي.");
+            }
+            finally { barqWebBusy = false; }
         }
 
         private void ExecuteBarqVoiceCommand(livelywpf.Voice.BarqVoiceCommand command)
@@ -3763,6 +3845,14 @@ namespace livelywpf
                             ShowMainWindow();
                             Button_Click_InstallWallpaper(this, new RoutedEventArgs());
                             break;
+                        case livelywpf.Voice.BarqVoiceCommand.OpenSearchResult:
+                            if (livelywpf.Voice.BarqWebSearch.IsSafeResultUrl(lastBarqResultUrl))
+                            {
+                                Process.Start(new ProcessStartInfo(lastBarqResultUrl) { UseShellExecute = true });
+                                SayBarq("I opened the source in your browser.", "فتحت المصدر في المتصفح.");
+                            }
+                            else SayBarq("There is no saved search result yet.", "مفيش نتيجة بحث محفوظة لسه.");
+                            break;
                         case livelywpf.Voice.BarqVoiceCommand.ApplySelected:
                             ShowMainWindow();
                             if (wallpapersLV.SelectedItem != null)
@@ -3772,6 +3862,9 @@ namespace livelywpf
                                     "Select a wallpaper in Library first.", System.Windows.Forms.ToolTipIcon.Info);
                             break;
                     }
+                    if (command == livelywpf.Voice.BarqVoiceCommand.PauseWallpapers ||
+                        command == livelywpf.Voice.BarqVoiceCommand.ResumeWallpapers)
+                        SayBarq("Wallpaper playback updated.", "تمام، عدلت تشغيل الخلفيات.");
                 }
                 catch (Exception ex)
                 {

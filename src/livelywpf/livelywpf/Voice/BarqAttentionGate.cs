@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 
 namespace livelywpf.Voice
 {
@@ -8,16 +9,17 @@ namespace livelywpf.Voice
     /// </summary>
     internal sealed class BarqAttentionGate
     {
-        private DateTime awakeUntilUtc = DateTime.MinValue;
+        // Atomic expiry for the Windows 8.1 x86 process.
+        private long awakeUntilUtcTicks;
         internal readonly TimeSpan FollowUp = TimeSpan.FromSeconds(16);
 
-        internal bool IsAwake(DateTime utc) { return utc <= awakeUntilUtc; }
-        internal void Arm(DateTime utc) { awakeUntilUtc = utc.Add(FollowUp); }
+        internal bool IsAwake(DateTime utc) { return utc.Ticks <= Interlocked.Read(ref awakeUntilUtcTicks); }
+        internal void Arm(DateTime utc) { Interlocked.Exchange(ref awakeUntilUtcTicks, utc.Add(FollowUp).Ticks); }
         internal void Extend(DateTime utc)
         {
-            if (IsAwake(utc)) awakeUntilUtc = utc.Add(FollowUp);
+            if (IsAwake(utc)) Arm(utc);
         }
-        internal void Reset() { awakeUntilUtc = DateTime.MinValue; }
+        internal void Reset() { Interlocked.Exchange(ref awakeUntilUtcTicks, 0); }
 
         internal bool TryHear(string speech, float confidence, bool speechDetected,
                               int peakLevel, double noiseFloor, DateTime utc,
@@ -38,7 +40,7 @@ namespace livelywpf.Voice
             if (hasWake)
             {
                 if (confidence < 0.78f) return false;
-                awakeUntilUtc = utc.Add(FollowUp);
+                Arm(utc);
                 if (String.IsNullOrWhiteSpace(remainder))
                 {
                     wakeOnly = true;
@@ -50,7 +52,7 @@ namespace livelywpf.Voice
             if (!IsAwake(utc) || phrase.Length < 2 || phrase.Length > 240)
                 return false;
             content = phrase;
-            awakeUntilUtc = utc.Add(FollowUp);
+            Arm(utc);
             return true;
         }
 

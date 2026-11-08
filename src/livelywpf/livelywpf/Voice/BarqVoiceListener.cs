@@ -21,6 +21,7 @@ namespace livelywpf.Voice
         internal System.Globalization.CultureInfo RecognizerCulture { get; private set; }
         private volatile bool enabled;
         private bool speechDetected;
+        private volatile bool hadWakeInteraction;
         private int peakLevel;
         private double noiseFloor;
 
@@ -129,6 +130,7 @@ namespace livelywpf.Voice
             if (confidence >= 0.84f &&
                 BarqVoiceCommands.TryParse(text, out command))
             {
+                hadWakeInteraction = true;
                 attention.Arm(DateTime.UtcNow);
                 onCommand(command);
                 return;
@@ -144,6 +146,7 @@ namespace livelywpf.Voice
                                    out utterance, out wakeOnly))
                 return;
 
+            hadWakeInteraction = true;
             if (wakeOnly)
             {
                 if (onWake != null) onWake();
@@ -171,12 +174,14 @@ namespace livelywpf.Voice
 
         internal void RefreshAttention()
         {
-            attention.Extend(DateTime.UtcNow);
+            // Re-arm when TTS finishes even if Gemini took longer than the old window.
+            if (hadWakeInteraction) attention.Arm(DateTime.UtcNow);
         }
 
         public void Dispose()
         {
             enabled = false;
+            hadWakeInteraction = false;
             attention.Reset();
             var old = engine;
             engine = null;

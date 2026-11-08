@@ -22,4 +22,9 @@ if($LASTEXITCODE -ne 0){throw 'BARQ voice command tests failed.'}
 if($LASTEXITCODE -ne 0){throw 'BARQ internet search tests failed to compile.'}
 & "$out\BarqSearchTests.exe"
 if($LASTEXITCODE -ne 0){throw 'BARQ internet search tests failed.'}
+# Standalone wake-word and attention tests run without microphone or internet.
+& $Compiler /nologo /target:exe "/out:$out\BarqAttentionTests.exe" "$voiceSource\BarqAttentionGate.cs" "$root\tests\BarqAttentionTests.cs"
+if($LASTEXITCODE -ne 0){throw 'BARQ attention gate tests did not compile.'}
+& "$out\BarqAttentionTests.exe"
+if($LASTEXITCODE -ne 0){throw 'BARQ attention gate tests failed.'}
 Write-Host 'Policy tests and engine compilation passed. These do not replace Windows 8.1 integration tests.'

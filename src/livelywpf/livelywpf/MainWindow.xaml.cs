@@ -47,6 +47,9 @@ namespace livelywpf
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
         // BARQ Voice is opt-in and scoped to Lively only; no microphone UI is added.
         private livelywpf.Voice.BarqVoiceListener barqVoiceListener;
+        private livelywpf.Voice.BarqGeminiClient barqGeminiClient;
+        private bool barqGeminiBusy;
+
         private livelywpf.Voice.BarqVoiceSpeaker barqVoiceSpeaker;
         private readonly livelywpf.Voice.BarqWebSearch barqWebSearch = new livelywpf.Voice.BarqWebSearch();
         private bool barqWebBusy;
@@ -1538,6 +1541,10 @@ namespace livelywpf
             barqVoiceMenu.ToolTipText = "Offline speech commands for AM Lively Wallpaper only.";
             barqVoiceMenu.Click += (s, e) => ToggleBarqVoice();
             _notifyIcon.ContextMenuStrip.Items.Add(barqVoiceMenu);
+            var configureGemini = new System.Windows.Forms.ToolStripMenuItem("BARQ - Configure Gemini API key");
+            configureGemini.Click += (s, e) => ConfigureBarqGeminiKey();
+            _notifyIcon.ContextMenuStrip.Items.Add(configureGemini);
+
 
 
             _notifyIcon.ContextMenuStrip.Items.Add("-");
@@ -3680,11 +3687,10 @@ namespace livelywpf
                 StopBarqVoice();
                 return;
             }
-
             try
             {
                 var listener = new livelywpf.Voice.BarqVoiceListener(
-                    ExecuteBarqVoiceCommand, HandleBarqVoiceQuestion);
+                    ExecuteBarqVoiceCommand, HandleBarqVoiceQuestion, OnBarqAwake);
                 string language;
                 try { language = listener.Start(); }
                 catch { listener.Dispose(); throw; }
@@ -3693,26 +3699,32 @@ namespace livelywpf
                 try
                 {
                     speaker = new livelywpf.Voice.BarqVoiceSpeaker(listener.RecognizerCulture,
-                        suppress => listener.SuppressRecognition = suppress);
+                        suppress =>
+                        {
+                            listener.SuppressRecognition = suppress;
+                            if (!suppress) listener.RefreshAttention();
+                        });
                 }
                 catch { listener.Dispose(); throw; }
 
                 barqVoiceListener = listener;
                 barqVoiceSpeaker = speaker;
+                barqGeminiClient = new livelywpf.Voice.BarqGeminiClient();
                 barqVoiceMenu.Checked = true;
                 barqVoiceMenu.Text = "BARQ Voice - Stop listening (" + language + ")";
                 barqVoiceMenu.ToolTipText = listener.DictationAvailable
-                    ? "Wallpaper commands and optional spoken internet answers; microphone ON."
-                    : "Wallpaper commands only; this speech engine cannot recognize free-form questions.";
-                SayBarq("Voice control is ready. You can request a wallpaper action or ask a question.",
-                        "أنا سامعك. اطلب خلفية أو اسألني عن معلومة.");
+                    ? "Listening for BARQ; follow-up attention lasts 16 seconds."
+                    : "Only fixed wallpaper commands; free-form dictation not installed.";
+                SayBarq("BARQ is listening. Say BARQ and ask a question.",
+                        "معاك يا باشا. نادي برق واسألني.");
             }
             catch (Exception ex)
             {
                 StopBarqVoice();
-                Logger.Warn(ex, "BARQ voice could not start.");
-                _notifyIcon.ShowBalloonTip(6500, "BARQ Voice unavailable",
-                    ex.Message, System.Windows.Forms.ToolTipIcon.Warning);
+                Logger.Warn("BARQ audio setup unavailable: " + ex.GetType().Name);
+                _notifyIcon.ShowBalloonTip(6000, "BARQ Voice unavailable",
+                    "Check the installed Windows speech engine and microphone.",
+                    System.Windows.Forms.ToolTipIcon.Warning);
             }
         }
 
@@ -3721,78 +3733,199 @@ namespace livelywpf
             if (barqVoiceListener != null)
             {
                 try { barqVoiceListener.Dispose(); }
-                catch (Exception ex) { Logger.Warn(ex, "BARQ voice recognition stop failed."); }
+                catch (Exception ex) { Logger.Warn("BARQ recognition stop: " + ex.GetType().Name); }
                 barqVoiceListener = null;
             }
             if (barqVoiceSpeaker != null)
             {
                 try { barqVoiceSpeaker.Dispose(); }
-                catch (Exception ex) { Logger.Warn(ex, "BARQ voice speaker stop failed."); }
+                catch (Exception ex) { Logger.Warn("BARQ voice stop: " + ex.GetType().Name); }
                 barqVoiceSpeaker = null;
             }
+            if (barqGeminiClient != null)
+            {
+                barqGeminiClient.Dispose();
+                barqGeminiClient = null;
+            }
+            barqGeminiBusy = false;
             lastBarqResultUrl = null;
             if (barqVoiceMenu != null)
             {
                 barqVoiceMenu.Checked = false;
                 barqVoiceMenu.Text = "BARQ Voice - Start listening";
-                barqVoiceMenu.ToolTipText = "Microphone OFF; enable for voice commands and information questions.";
+                barqVoiceMenu.ToolTipText = "Microphone OFF by default; enable only when needed.";
             }
         }
 
         private void SayBarq(string english, string arabic = null)
         {
-            try
-            {
-                if (barqVoiceSpeaker != null) barqVoiceSpeaker.Say(english, arabic);
-            }
-            catch (Exception ex) { Logger.Warn(ex, "BARQ voice audio output failed."); }
+            try { if (barqVoiceSpeaker != null) barqVoiceSpeaker.Say(english, arabic); }
+            catch (Exception ex) { Logger.Warn("BARQ output: " + ex.GetType().Name); }
         }
 
-        private void HandleBarqVoiceQuestion(string query)
+        private void OnBarqAwake()
         {
             if (_isExit || Dispatcher.HasShutdownStarted) return;
-            Dispatcher.BeginInvoke(new Action(async () => await AnswerBarqVoiceQuestionAsync(query)));
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (!_isExit) SayBarq("I'm listening.", "سامعك، اتفضل.");
+            }));
         }
 
-        private async System.Threading.Tasks.Task AnswerBarqVoiceQuestionAsync(string query)
+        private void HandleBarqVoiceQuestion(string utterance)
         {
-            if (_isExit || barqVoiceListener == null || barqWebBusy) return;
-            barqWebBusy = true;
-            var activeListener = barqVoiceListener;
-            bool arabic = activeListener.RecognizerCulture != null &&
-                          activeListener.RecognizerCulture.TwoLetterISOLanguageName == "ar";
-            SayBarq("Searching for information online.", "بدور على المعلومة على الإنترنت.");
+            if (_isExit || Dispatcher.HasShutdownStarted) return;
+            Dispatcher.BeginInvoke(new Action(async () =>
+                await AnswerBarqVoiceQuestionAsync(utterance)));
+        }
+
+        private async System.Threading.Tasks.Task AnswerBarqVoiceQuestionAsync(string utterance)
+        {
+            if (_isExit || barqVoiceListener == null ||
+                barqGeminiClient == null || barqGeminiBusy) return;
+            barqGeminiBusy = true;
+            var session = barqVoiceListener;
+            bool arabic = session.RecognizerCulture != null &&
+                          session.RecognizerCulture.TwoLetterISOLanguageName == "ar";
             try
             {
-                var result = await barqWebSearch.SearchAsync(query, arabic);
-                if (_isExit || activeListener != barqVoiceListener) return;
+                if (String.IsNullOrWhiteSpace(livelywpf.Voice.BarqGeminiKeyStore.Read()))
+                {
+                    SayBarq("Configure your Gemini API key from the tray menu first.",
+                            "لازم تضيف مفتاح جيمناي من قائمة البرنامج جنب الساعة.");
+                    _notifyIcon.ShowBalloonTip(5500, "BARQ needs Gemini",
+                        "Right click the tray icon, then choose Configure Gemini API key.",
+                        System.Windows.Forms.ToolTipIcon.Warning);
+                    return;
+                }
 
-                lastBarqResultUrl = result.Found &&
-                    livelywpf.Voice.BarqWebSearch.IsSafeResultUrl(result.Url) ? result.Url : null;
+                // Public search is opt-in per spoken query, not a forced paid grounding call.
+                // Other ordinary conversations go straight to Gemini text generation.
+                string evidence = null;
+                string q = utterance.Trim();
+                if (q.StartsWith("ابحث ", StringComparison.Ordinal) ||
+                    q.StartsWith("دور ", StringComparison.Ordinal) ||
+                    q.StartsWith("search ", StringComparison.OrdinalIgnoreCase) ||
+                    q.StartsWith("look up ", StringComparison.OrdinalIgnoreCase))
+                {
+                    string searchTerm;
+                    bool explicitSearch =
+                        livelywpf.Voice.BarqQuestionParser.TryExtract(
+                            (arabic ? "برق " : "barq ") + q, out searchTerm);
+                    if (explicitSearch)
+                    {
+                        var result = await barqWebSearch.SearchAsync(searchTerm, arabic);
+                        if (result.Found)
+                        {
+                            evidence = "Source: " + result.Provider + "\n" + result.Url +
+                                       "\nExtract: " + result.Text;
+                            lastBarqResultUrl = result.Url;
+                        }
+                    }
+                }
 
-                if (result.Found && barqVoiceSpeaker != null)
-                    barqVoiceSpeaker.SayAnswer(result);
-                else
-                    SayBarq("I couldn't retrieve a reliable search result. Please try again.",
-                            "ملقتش نتيجة موثوقة دلوقتي. جرب سؤال تاني.");
+                if (_isExit || barqVoiceListener != session) return;
+                var client = barqGeminiClient;
+                string reply = await client.AskAsync(q, evidence,
+                    System.Threading.CancellationToken.None);
 
-                string visible = (result.Found ? result.Provider + ": " : "") + result.Text;
-                if (visible.Length > 180) visible = visible.Substring(0, 177) + "...";
-                string title = result.Found
-                    ? "BARQ - " + result.Title.Substring(0, Math.Min(result.Title.Length, 35))
-                    : "BARQ - Search";
-                _notifyIcon.ShowBalloonTip(6000, title, visible,
-                    result.Found ? System.Windows.Forms.ToolTipIcon.Info :
-                                   System.Windows.Forms.ToolTipIcon.Warning);
+                if (_isExit || barqVoiceListener != session) return;
+                if (barqVoiceSpeaker != null)
+                {
+                    if (arabic && !barqVoiceSpeaker.SpeaksArabic)
+                        SayBarq("Gemini replied, but an Arabic Windows voice is not installed. Check the notification.");
+                    else
+                        SayBarq(reply, reply);
+                }
+
+                string visible = reply.Length > 190 ? reply.Substring(0, 187) + "..." : reply;
+                _notifyIcon.ShowBalloonTip(6500, "BARQ - Gemini", visible,
+                    System.Windows.Forms.ToolTipIcon.Info);
             }
             catch (Exception ex)
             {
-                Logger.Warn(ex, "BARQ online information lookup failed.");
-                if (!_isExit && activeListener == barqVoiceListener)
-                    SayBarq("Online search is not available right now.",
-                            "البحث على الإنترنت مش متاح دلوقتي.");
+                if (_isExit || barqVoiceListener != session) return;
+                Logger.Warn("BARQ Gemini error type: " + ex.GetType().Name);
+                string message = ex is InvalidOperationException
+                    ? ex.Message
+                    : "Gemini is temporarily unavailable. Check the connection and try again.";
+                if (message.Length > 175) message = message.Substring(0, 175);
+                _notifyIcon.ShowBalloonTip(6000, "BARQ - Gemini", message,
+                    System.Windows.Forms.ToolTipIcon.Warning);
+                SayBarq("Gemini couldn't answer this time.", "جيمناي مش قادر يرد دلوقتي.");
             }
-            finally { barqWebBusy = false; }
+            finally { barqGeminiBusy = false; }
+        }
+
+        private void ConfigureBarqGeminiKey()
+        {
+            // WinForms works on Windows 8.1 and is already part of this application.
+            // Password-style textbox never displays an existing key.
+            using (var form = new System.Windows.Forms.Form())
+            {
+                form.Text = "BARQ - Gemini API key";
+                form.Width = 470;
+                form.Height = 213;
+                form.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+                form.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+                form.MaximizeBox = false;
+                form.MinimizeBox = false;
+                var label = new System.Windows.Forms.Label {
+                    Text = "Paste your Gemini API key (encrypted for your Windows user):",
+                    Left = 18, Top = 18, Width = 430, Height = 38
+                };
+                var input = new System.Windows.Forms.TextBox {
+                    Left = 18, Top = 60, Width = 425, UseSystemPasswordChar = true
+                };
+                var save = new System.Windows.Forms.Button {
+                    Text = "Save key", Left = 218, Top = 112, Width = 105
+                };
+                var clear = new System.Windows.Forms.Button {
+                    Text = "Remove key", Left = 329, Top = 112, Width = 114
+                };
+                var hint = new System.Windows.Forms.Label {
+                    Text = "No API key is shipped with the app. Free tier limits depend on your account.",
+                    Left = 18, Top = 147, Width = 425, Height = 27
+                };
+                save.Click += (sender, args) =>
+                {
+                    try
+                    {
+                        livelywpf.Voice.BarqGeminiKeyStore.Save(input.Text);
+                        input.Clear();
+                        form.DialogResult = System.Windows.Forms.DialogResult.OK;
+                        form.Close();
+                    }
+                    catch (Exception)
+                    {
+                        System.Windows.Forms.MessageBox.Show(form,
+                            "Could not save the Gemini key. Check the input and your Windows profile.",
+                            "BARQ Gemini", System.Windows.Forms.MessageBoxButtons.OK,
+                            System.Windows.Forms.MessageBoxIcon.Warning);
+                    }
+                };
+                clear.Click += (sender, args) =>
+                {
+                    try
+                    {
+                        livelywpf.Voice.BarqGeminiKeyStore.Clear();
+                        input.Clear();
+                        form.Close();
+                    }
+                    catch (Exception)
+                    {
+                        System.Windows.Forms.MessageBox.Show(form,
+                            "Could not remove the local Gemini key.", "BARQ Gemini");
+                    }
+                };
+                form.Controls.Add(label);
+                form.Controls.Add(input);
+                form.Controls.Add(save);
+                form.Controls.Add(clear);
+                form.Controls.Add(hint);
+                form.AcceptButton = save;
+                form.ShowDialog();
+            }
         }
 
         private void ExecuteBarqVoiceCommand(livelywpf.Voice.BarqVoiceCommand command)

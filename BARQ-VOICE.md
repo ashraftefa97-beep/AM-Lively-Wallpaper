@@ -1,46 +1,52 @@
-# BARQ Voice for AM Lively Wallpaper — Windows 8.1 x86
+# BARQ Voice + Gemini + voice attention (Windows 8.1 x86)
 
-## What this does
+## What changed
 
-BARQ Voice is optional, starts only from the Windows system-tray icon, and uses Windows' local speech recognition and text-to-speech via `System.Speech` on .NET Framework 4.7.2.
+BARQ uses Gemini 3.8 Flash (REST `generateContent`) for conversational replies. A tiny local attention gate processes speech/audio level events from Windows System.Speech before an utterance is ever sent to Gemini. The rest of AM Lively Wallpaper retains its original playback and process-safety behavior.
 
-It can execute the existing Lively-only commands and, with a *dictation-capable recognizer*, answer short factual questions from internet search snippets **out loud**. It is not BARQ's full conversational AI or a locally-running large language model.
+**This is not Gemini Live.** Gemini receives *text only*, never microphone audio. The app does not install a new Windows speech recognizer, speaker recognition system, microphone driver or voice model.
 
-## Start and stop
+## Activating and configuring
 
-Right-click the AM Lively Wallpaper icon near the clock and choose **BARQ Voice - Start listening**. Select **Stop listening** to release the microphone. Voice stays OFF by default after app launch, with no new microphone icon in the main UI. Exit disposes audio resources.
+1. Have an installed English or Arabic Windows Speech Recognition engine, a working microphone and a local text-to-speech voice. **Windows 8.1 may not provide an Arabic recognizer by default.**
+2. From the AM Lively tray icon choose **BARQ - Configure Gemini API key**. Paste a Gemini API key created in [Google AI Studio](https://aistudio.google.com/apikey).
+3. The key is encrypted for the current Windows user with DPAPI under `%APPDATA%\AM Lively Wallpaper\barq-gemini-key.bin`. Alternatively set the `GEMINI_API_KEY` environment variable yourself.
+4. Choose **BARQ Voice - Start listening** to enable the microphone. It is **OFF by default**. Stop listening from the same tray menu. No microphone icon is added to the main UI.
+5. Say "Barq" / "برق" and ask a question or a wallpaper command. After being addressed, BARQ remains attentive for ~16 seconds for brief follow-ups without repeating its name. The attention window is extended after each spoken response.
 
-Arabic speech recognition **requires an actual Arabic speech recognition engine installed in Windows**. The Arabic display language is insufficient. English speech recognition is used as a fallback. If dictation grammar is unsupported, Lively's fixed commands still work, but questions cannot be recognized.
+## Attention safety and noise
 
-Spoken replies use an installed TTS voice. A male voice matching the recognizer language is preferred; **Egyptian male speech is not guaranteed**. Arabic spoken answers require Arabic TTS. Without a matching voice, only the written answer is displayed and a brief English explanation is spoken.
+- The speech recognizer listens only after explicit tray activation. It requires the wake word before starting a conversation.
+- Voice detection, the recent observed microphone audio level versus the ambient baseline, recognition confidence and a word boundary are all used to avoid treating background speech as a request.
+- Silence or inactivity ends the active follow-up window. BARQ ignores recognized audio while its own text-to-speech engine is speaking.
+- No speaker identity verification is provided; another person near the microphone who says "Barq" may wake the assistant. This is **not** speaker diarization or a biometric voice lock.
+- A recognizer without dictation support can still use the predefined Lively commands but cannot do free-form Gemini speech.
 
-## Examples
+## What Gemini can do
 
-- «برق وقف الخلفيات» — pauses wallpaper playback
-- «برق شغل الخلفيات» — resumes playback
-- «برق افتح المكتبة» — opens Library
-- «برق ابحث عن الأقمار الصناعية» — searches for a public result and speaks a short sourced answer
-- “Barq who is Alan Turing?” — searches and speaks a short result
-- “Barq open search result” / «برق افتح نتيجة البحث» — opens the last source URL in the browser when explicitly requested
+- Conversational questions, summaries and explanations with short spoken-friendly responses.
+- Arabic questions get Egyptian colloquial Arabic text from Gemini, but **spoken Arabic requires an installed Arabic Windows TTS voice**.
+- Explicit "search for..." / "ابحث عن..." questions can supplement Gemini context with public Bing RSS / Wikipedia snippets. This is not guaranteed real-time search; provider availability and response accuracy vary.
+- For wallpaper commands such as pause, resume, import, library, settings, or apply selected, BARQ continues to call the app's existing, safeguarded handlers without involving Gemini.
+- Process-stopping and restoration are not controlled by Gemini. The assistant cannot generate arbitrary system commands.
 
-Wallpaper and process logic is unchanged: processes cannot be killed by voice; applying a wallpaper keeps its original confirmation prompts.
+## API privacy, performance and pricing
 
-## How internet search works
+- Audio is captured by System.Speech locally. Recognized questions and up to four previous chat pairs are sent to Google only when the user has explicitly activated BARQ and addressed it. History is kept **in RAM only** during that voice session.
+- The source does not contain or ship any API key, and the key is never included in logs or GitHub Actions.
+- The default model is `gemini-3.8-flash`; optionally set `BARQ_GEMINI_MODEL=gemini-3.1-flash-lite` to use a lighter model if it is available to your API key.
+- **Gemini may incur charges** depending on your Google API billing setup and free-tier usage; availability, model policies and limits can change. The application does not purchase subscriptions or automatically enable paid tiers.
+- Internet access and a Gemini API key are required for conversational answers. Basic Lively voice commands work without Gemini.
+- Microphone and audio response are controlled by the app's existing tray lifecycle; no new Windows background service or telemetry is installed.
 
-1. The recognizer checks that the phrase starts with **Barq / برق** and matches an information-question prefix.
-2. Only the resulting question text (maximum 140 characters) is sent over HTTPS to Bing's public RSS search.
-3. If RSS is unavailable, the MediaWiki public Wikipedia search API is used as an alternative.
-4. A brief result snippet with its provider is spoken and shown in a notification; it is not a synthesized AI explanation or independently verified fact.
-5. Results can be incomplete or wrong. The user can explicitly request opening the source in a browser.
+## Testing
 
-There is no API key, subscription or audio upload. The two public search services require an internet connection, and availability is not guaranteed. No transcript history is saved by this feature.
+CI compiles the unchanged .NET Framework 4.7.2 x86 WPF application and installer; runs existing wallpaper/process safety tests, fixed-command tests, internet snippet parser tests and pure attention gate tests. These checks **do not** establish real microphone or device compatibility.
 
-## Compatibility and test matrix
-
-- Target: Windows 8.1 x86, .NET Framework 4.7.2, MahApps.Metro 1.6.5.1.
-- Code: System.Speech, System.Net.Http and System.Xml.Linq from .NET Framework; no new NuGet dependency.
-- CI: project/installer build, existing process safety tests, wake-word parser tests, question parser tests, offline Bing RSS and Wikipedia XML tests.
-- Manual validation still needed on Windows 8.1: microphone, installed speech grammars, installed voices, full/partial playback, actual HTTPS lookup, tray hide/exit, CPU/RAM, multiple monitors, and process-approval prompts.
-- About page: the bulky license viewer is removed, but the actual **License.txt** and **NOTICE-AM.md** remain in the installation; two compact buttons open them.
-
-No guarantee of Egyptian Arabic recognition, native Arabic TTS availability, real-time web search uptime or full natural conversation is implied by a successful build.
+Manual tests needed on a **real Windows 8.1 x86 device**:
+- Wake on "Barq", follow-up without wake, timeout after 16 seconds, background TV noise, low microphone volume, short pauses and repeated commands.
+- Check that BARQ does not respond to its own speech; verify no loop after speaking.
+- Test configured Gemini API key, 401/403/429 and offline errors, web source queries and the notification display.
+- Verify Arabic and English recognizers actually installed, and available Arabic TTS voice. Confirm behaviour when dictation is unsupported.
+- Exit the application, stop listening, and verify the microphone is released, conversation history cleared and no extra background process continues.
+- Test tray resource usage, DPI, wallpaper playback/fullscreen pause/multi-monitor, process permissions and restoration.

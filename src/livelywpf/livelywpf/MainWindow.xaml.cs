@@ -123,6 +123,14 @@ namespace livelywpf
             //this.DataContext = selectedTile; //todo: figure out why is this not working?
 
             SubcribeUI();
+            // Attach motion events after restoring the original feature settings.
+            if (!SaveData.config.UiAnimationsMode.HasValue) SaveData.config.UiAnimationsMode = 1;
+            comboBoxAnimations.SelectedIndex = Math.Max(0, Math.Min(2, SaveData.config.UiAnimationsMode.Value));
+            comboBoxAnimations.SelectionChanged += ComboBoxAnimations_SelectionChanged;
+            tabControl1.SelectionChanged += AnimateTabSelection;
+            this.StateChanged += (s, e) => SuspendDecorativeAnimationWhenHidden();
+            this.IsVisibleChanged += (s, e) => SuspendDecorativeAnimationWhenHidden();
+
 
             lblVersionNumber.Text = "v" + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
@@ -3604,5 +3612,61 @@ namespace livelywpf
         private void OpenLibraryQuick(object sender, RoutedEventArgs e) { tabControl1.SelectedIndex = 0; }
         private void OpenSettingsQuick(object sender, RoutedEventArgs e) { tabControl1.SelectedIndex = 2; }
         private void OpenProcessesQuick(object sender, RoutedEventArgs e) { tabControl1.SelectedIndex = 3; }
+
+        private FrameworkElement animatedPage;
+        private void ComboBoxAnimations_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (comboBoxAnimations.SelectedIndex < 0) return;
+            SaveData.config.UiAnimationsMode = comboBoxAnimations.SelectedIndex;
+            SaveData.SaveConfig();
+            if (comboBoxAnimations.SelectedIndex == 2) SuspendDecorativeAnimationWhenHidden(true);
+        }
+
+        private void SuspendDecorativeAnimationWhenHidden(bool force = false)
+        {
+            if (!force && IsVisible && WindowState != WindowState.Minimized) return;
+            if (animatedPage == null) return;
+            animatedPage.BeginAnimation(UIElement.OpacityProperty, null);
+            animatedPage.Opacity = 1.0;
+            var translate = animatedPage.RenderTransform as TranslateTransform;
+            if (translate != null)
+            {
+                translate.BeginAnimation(TranslateTransform.YProperty, null);
+                translate.Y = 0;
+            }
+            animatedPage = null;
+        }
+
+        private void AnimateTabSelection(object sender, SelectionChangedEventArgs e)
+        {
+            // Child ComboBoxes raise bubbling SelectionChanged too; ignore those.
+            if (!Object.ReferenceEquals(e.Source, tabControl1)) return;
+            SuspendDecorativeAnimationWhenHidden(true);
+            if (!IsVisible || WindowState == WindowState.Minimized) return;
+            int level = SaveData.config.UiAnimationsMode ?? 1;
+            if (level == 2) return;
+            var content = tabControl1.SelectedContent as FrameworkElement;
+            if (content == null) return;
+            animatedPage = content;
+            var easing = new QuadraticEase { EasingMode = EasingMode.EaseOut };
+            var fade = new DoubleAnimation(0.78, 1.0, TimeSpan.FromMilliseconds(level == 0 ? 220 : 150))
+            {
+                EasingFunction = easing,
+                FillBehavior = FillBehavior.Stop
+            };
+            content.BeginAnimation(UIElement.OpacityProperty, fade);
+            if (level == 0 && (content.RenderTransform == null ||
+                               content.RenderTransform.Value.IsIdentity))
+            {
+                var translate = new TranslateTransform();
+                content.RenderTransform = translate;
+                var move = new DoubleAnimation(5.0, 0.0, TimeSpan.FromMilliseconds(220))
+                {
+                    EasingFunction = easing,
+                    FillBehavior = FillBehavior.Stop
+                };
+                translate.BeginAnimation(TranslateTransform.YProperty, move);
+            }
+        }
     }
 }

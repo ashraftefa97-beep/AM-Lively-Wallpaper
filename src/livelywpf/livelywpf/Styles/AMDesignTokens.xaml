@@ -73,6 +73,7 @@
                     </Trigger>
                     <Trigger Property="IsSelected" Value="True">
                         <Setter Property="Background" Value="{DynamicResource AMSelection}"/>
+                        <Setter Property="BorderBrush" Value="{DynamicResource AMAccent}"/>
                     </Trigger>
                     <Trigger Property="IsKeyboardFocusWithin" Value="True">
                         <Setter Property="BorderBrush" Value="{DynamicResource AMAccent}"/>

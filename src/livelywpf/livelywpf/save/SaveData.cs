@@ -616,6 +616,8 @@ namespace livelywpf
             public System.Windows.Media.Stretch VideoScaler { get; set; }
             public System.Windows.Media.Stretch GifScaler { get; set; }
             public int Theme { get; set; }
+            // UI-only motion preference. Nullable keeps existing JSON profiles on Reduced by default.
+            public int? UiAnimationsMode { get; set; }
             public StreamQualitySuggestion StreamQuality { get; set; } //video stream quality for youtube-dl, 0 - best(4k)
             public WallpaperArrangement WallpaperArrangement { get; set; } // 0 -per monitor, 1-span
             public bool DXVA { get; set; } //hw acceleration videoplayback, currently unused.
@@ -703,7 +705,8 @@ namespace livelywpf
                 WallpaperWaitTime = 30000; // 30sec
                 ProcessTimerInterval = 500; //reduce to 250 for quicker response.
                 Language = CultureInfo.CurrentCulture.Name;//"en"; 
-                Theme = 1; //dark-olive, original default was dark-lime
+                Theme = 1; // BARQ dark theme
+                UiAnimationsMode = 1; // Reduced motion (default)
                 StreamQuality = StreamQualitySuggestion.h720p;
                 AppTransparencyPercent = 0.9f;
                 GenerateTile = true;

@@ -45,6 +45,10 @@ namespace livelywpf
     public partial class MainWindow : MetroWindow
     {
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+        // BARQ Voice is opt-in and scoped to Lively only; no microphone UI is added.
+        private livelywpf.Voice.BarqVoiceListener barqVoiceListener;
+        private System.Windows.Forms.ToolStripMenuItem barqVoiceMenu;
+
 
         public static bool Multiscreen { get; private set;}
         public static bool HighContrastFix { get; private set; }
@@ -1538,6 +1542,11 @@ namespace livelywpf
             configure_traybtn = new System.Windows.Forms.ToolStripMenuItem("Customize Wallpaper", Properties.Icons.gear_color_48);
             configure_traybtn.Click += (s, e) => ShowCustomiseWidget();
             _notifyIcon.ContextMenuStrip.Items.Add(configure_traybtn);
+            barqVoiceMenu = new System.Windows.Forms.ToolStripMenuItem("BARQ Voice - Start listening");
+            barqVoiceMenu.ToolTipText = "Offline speech commands for AM Lively Wallpaper only.";
+            barqVoiceMenu.Click += (s, e) => ToggleBarqVoice();
+            _notifyIcon.ContextMenuStrip.Items.Add(barqVoiceMenu);
+
 
             _notifyIcon.ContextMenuStrip.Items.Add("-");
             _notifyIcon.ContextMenuStrip.Items.Add(update_traybtn);
@@ -1620,6 +1629,8 @@ namespace livelywpf
             }
             else
             {
+                // Stop audio capture before exiting; nothing is left listening.
+                StopBarqVoice();
                 //static event, otherwise memory leak.
                 SystemEvents.DisplaySettingsChanged -= SystemEvents_DisplaySettingsChanged;
 
@@ -3667,6 +3678,120 @@ namespace livelywpf
                 };
                 translate.BeginAnimation(TranslateTransform.YProperty, move);
             }
+        }
+
+        private void ToggleBarqVoice()
+        {
+            if (barqVoiceListener != null)
+            {
+                StopBarqVoice();
+                return;
+            }
+
+            try
+            {
+                var listener = new livelywpf.Voice.BarqVoiceListener(ExecuteBarqVoiceCommand);
+                string language;
+                try { language = listener.Start(); }
+                catch { listener.Dispose(); throw; }
+                barqVoiceListener = listener;
+                barqVoiceMenu.Checked = true;
+                barqVoiceMenu.Text = "BARQ Voice - Stop listening (" + language + ")";
+                _notifyIcon.ShowBalloonTip(3500, "BARQ Voice",
+                    "Listening for BARQ wallpaper commands (" + language + ").", System.Windows.Forms.ToolTipIcon.Info);
+            }
+            catch (Exception ex)
+            {
+                barqVoiceMenu.Checked = false;
+                barqVoiceMenu.Text = "BARQ Voice - Start listening";
+                Logger.Warn(ex, "BARQ Voice could not start.");
+                _notifyIcon.ShowBalloonTip(6500, "BARQ Voice unavailable",
+                    ex.Message, System.Windows.Forms.ToolTipIcon.Warning);
+            }
+        }
+
+        private void StopBarqVoice()
+        {
+            if (barqVoiceListener != null)
+            {
+                try { barqVoiceListener.Dispose(); }
+                catch (Exception ex) { Logger.Warn(ex, "BARQ Voice stop failure."); }
+                barqVoiceListener = null;
+            }
+            if (barqVoiceMenu != null)
+            {
+                barqVoiceMenu.Checked = false;
+                barqVoiceMenu.Text = "BARQ Voice - Start listening";
+            }
+        }
+
+        private void ExecuteBarqVoiceCommand(livelywpf.Voice.BarqVoiceCommand command)
+        {
+            // The audio event comes from a background thread. All app operations stay on WPF's UI thread.
+            if (_isExit || Dispatcher.HasShutdownStarted) return;
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (_isExit) return;
+                try
+                {
+                    switch (command)
+                    {
+                        case livelywpf.Voice.BarqVoiceCommand.PauseWallpapers:
+                            if (SetupDesktop.GetEngineState() != SetupDesktop.EngineState.paused)
+                            {
+                                SetupDesktop.SetEngineState(SetupDesktop.EngineState.paused);
+                                pause_traybtn.Checked = true;
+                            }
+                            break;
+                        case livelywpf.Voice.BarqVoiceCommand.ResumeWallpapers:
+                            if (SetupDesktop.GetEngineState() != SetupDesktop.EngineState.normal)
+                            {
+                                SetupDesktop.SetEngineState(SetupDesktop.EngineState.normal);
+                                pause_traybtn.Checked = false;
+                            }
+                            break;
+                        case livelywpf.Voice.BarqVoiceCommand.Library:
+                            ShowMainWindow();
+                            tabControl1.SelectedIndex = 0;
+                            break;
+                        case livelywpf.Voice.BarqVoiceCommand.AddWallpaper:
+                            ShowMainWindow();
+                            tabControl1.SelectedIndex = 1;
+                            break;
+                        case livelywpf.Voice.BarqVoiceCommand.Settings:
+                            ShowMainWindow();
+                            tabControl1.SelectedIndex = 2;
+                            break;
+                        case livelywpf.Voice.BarqVoiceCommand.Processes:
+                            // Navigate only. Never stop or restore arbitrary processes by voice.
+                            ShowMainWindow();
+                            tabControl1.SelectedIndex = 3;
+                            break;
+                        case livelywpf.Voice.BarqVoiceCommand.About:
+                            ShowMainWindow();
+                            tabControl1.SelectedIndex = 4;
+                            break;
+                        case livelywpf.Voice.BarqVoiceCommand.ImportArchive:
+                            ShowMainWindow();
+                            Button_Click_InstallWallpaper(this, new RoutedEventArgs());
+                            break;
+                        case livelywpf.Voice.BarqVoiceCommand.ApplySelected:
+                            ShowMainWindow();
+                            if (wallpapersLV.SelectedItem != null)
+                                SetWallpaperBtn_Click(this, new RoutedEventArgs());
+                            else
+                                _notifyIcon.ShowBalloonTip(4000, "BARQ Voice",
+                                    "Select a wallpaper in Library first.", System.Windows.Forms.ToolTipIcon.Info);
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.Warn(ex, "BARQ Voice command failed: " + command);
+                    _notifyIcon.ShowBalloonTip(4000, "BARQ Voice",
+                        "The wallpaper command could not be completed.", System.Windows.Forms.ToolTipIcon.Warning);
+                }
+            }));
         }
     }
 }

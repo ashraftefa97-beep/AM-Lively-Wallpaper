@@ -291,7 +291,7 @@
                     <Border Background="{DynamicResource AMSidebar}" BorderBrush="{DynamicResource AMBorder}"
                 BorderThickness="1" CornerRadius="12" Padding="20" Margin="0,0,0,16">
                   <StackPanel>
-                    <TextBlock Text="Interactive & games" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource AMText}"/>
+                    <TextBlock Text="Interactive &amp; games" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource AMText}"/>
                     <TextBlock Text="Add Unity, Godot, BizHawk or another supported application." FontSize="12" Foreground="{DynamicResource AMMuted}" Margin="0,4,0,15"/>
                     <WrapPanel Orientation="Horizontal">
                     <Controls:Tile Title="{x:Static p:Resources.txtTileUnity}" Click="Tile_Unity_Click" ClickMode="Release" Style="{StaticResource AMWallpaperTile}"

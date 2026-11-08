@@ -55,6 +55,7 @@ namespace livelywpf
         private bool barqWebBusy;
         private string lastBarqResultUrl;
         private System.Windows.Forms.ToolStripMenuItem barqVoiceMenu;
+        private livelywpf.Voice.BarqVoicePanel barqVoicePanel;
 
 
         public static bool Multiscreen { get; private set;}
@@ -1537,6 +1538,10 @@ namespace livelywpf
             configure_traybtn = new System.Windows.Forms.ToolStripMenuItem("Customize Wallpaper", Properties.Icons.gear_color_48);
             configure_traybtn.Click += (s, e) => ShowCustomiseWidget();
             _notifyIcon.ContextMenuStrip.Items.Add(configure_traybtn);
+            // The control panel is visible independently of the main wallpaper window.
+            var openBarqPanel = new System.Windows.Forms.ToolStripMenuItem("BARQ Voice - Open control panel");
+            openBarqPanel.Click += (s, e) => OpenBarqVoicePanel();
+            _notifyIcon.ContextMenuStrip.Items.Add(openBarqPanel);
             barqVoiceMenu = new System.Windows.Forms.ToolStripMenuItem("BARQ Voice - Start listening");
             barqVoiceMenu.ToolTipText = "Offline speech commands for AM Lively Wallpaper only.";
             barqVoiceMenu.Click += (s, e) => ToggleBarqVoice();
@@ -1630,6 +1635,11 @@ namespace livelywpf
             {
                 // Stop audio capture before exiting; nothing is left listening.
                 StopBarqVoice();
+                if (barqVoicePanel != null)
+                {
+                    barqVoicePanel.Close();
+                    barqVoicePanel = null;
+                }
                 barqWebSearch.Dispose();
                 //static event, otherwise memory leak.
                 SystemEvents.DisplaySettingsChanged -= SystemEvents_DisplaySettingsChanged;
@@ -3680,6 +3690,77 @@ namespace livelywpf
             }
         }
 
+
+        private void OpenBarqControlClick(object sender, RoutedEventArgs e)
+        {
+            OpenBarqVoicePanel();
+        }
+
+        private livelywpf.Voice.BarqPanelStatus ReadBarqPanelStatus()
+        {
+            var listener = barqVoiceListener;
+            return new livelywpf.Voice.BarqPanelStatus
+            {
+                Listening = listener != null,
+                GeminiConfigured = !String.IsNullOrWhiteSpace(
+                    livelywpf.Voice.BarqGeminiKeyStore.Read()),
+                CanDictate = listener != null && listener.DictationAvailable,
+                Language = listener == null || listener.RecognizerCulture == null
+                    ? null : listener.RecognizerCulture.DisplayName
+            };
+        }
+
+        private void OpenBarqVoicePanel()
+        {
+            if (_isExit || Dispatcher.HasShutdownStarted) return;
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.BeginInvoke(new Action(OpenBarqVoicePanel));
+                return;
+            }
+            try
+            {
+                if (barqVoicePanel == null)
+                {
+                    barqVoicePanel = new livelywpf.Voice.BarqVoicePanel(
+                        ReadBarqPanelStatus,
+                        ToggleBarqVoice,
+                        ConfigureBarqGeminiKey,
+                        () => SayBarq("This is the BARQ speaker test.", "أنا برق، والصوت شغال."),
+                        ExecuteBarqVoiceCommand,
+                        reply =>
+                        {
+                            if (barqVoiceSpeaker == null) return;
+                            if (!barqVoiceSpeaker.SpeaksArabic &&
+                                reply.Any(ch => ch >= '\u0600' && ch <= '\u06FF'))
+                            {
+                                if (barqVoicePanel != null)
+                                    barqVoicePanel.AddActivity("SYSTEM",
+                                        "Arabic speech requires an installed Arabic Windows TTS voice.");
+                            }
+                            else SayBarq(reply, reply);
+                        },
+                        () => barqVoicePanel = null);
+                    barqVoicePanel.Show();
+                }
+                else
+                {
+                    if (barqVoicePanel.WindowState == WindowState.Minimized)
+                        barqVoicePanel.WindowState = WindowState.Normal;
+                    barqVoicePanel.Show();
+                    barqVoicePanel.Activate();
+                }
+                barqVoicePanel.RefreshStatus();
+            }
+            catch (Exception ex)
+            {
+                Logger.Warn("BARQ control window open failed: " + ex.GetType().Name);
+                _notifyIcon.ShowBalloonTip(5000, "BARQ Voice",
+                    "The voice control window could not be displayed.",
+                    System.Windows.Forms.ToolTipIcon.Warning);
+            }
+        }
+
         private void ToggleBarqVoice()
         {
             if (barqVoiceListener != null)
@@ -3717,6 +3798,9 @@ namespace livelywpf
                     : "Only fixed wallpaper commands; free-form dictation not installed.";
                 SayBarq("BARQ is listening. Say BARQ and ask a question.",
                         "معاك يا باشا. نادي برق واسألني.");
+                OpenBarqVoicePanel();
+                if (barqVoicePanel != null)
+                    barqVoicePanel.AddActivity("SYSTEM", "Microphone listening is enabled.");
             }
             catch (Exception ex)
             {
@@ -3725,6 +3809,9 @@ namespace livelywpf
                 _notifyIcon.ShowBalloonTip(6000, "BARQ Voice unavailable",
                     "Check the installed Windows speech engine and microphone.",
                     System.Windows.Forms.ToolTipIcon.Warning);
+                if (barqVoicePanel != null)
+                    barqVoicePanel.AddActivity("ERROR",
+                        "The microphone could not start. Check your Windows speech recognizer and input device.");
             }
         }
 
@@ -3755,6 +3842,8 @@ namespace livelywpf
                 barqVoiceMenu.Text = "BARQ Voice - Start listening";
                 barqVoiceMenu.ToolTipText = "Microphone OFF by default; enable only when needed.";
             }
+            if (barqVoicePanel != null)
+                barqVoicePanel.RefreshStatus();
         }
 
         private void SayBarq(string english, string arabic = null)
@@ -3768,7 +3857,12 @@ namespace livelywpf
             if (_isExit || Dispatcher.HasShutdownStarted) return;
             Dispatcher.BeginInvoke(new Action(() =>
             {
-                if (!_isExit) SayBarq("I'm listening.", "سامعك، اتفضل.");
+                if (!_isExit)
+                {
+                    if (barqVoicePanel != null)
+                        barqVoicePanel.AddActivity("LISTENING", "Wake word detected. Ask your question.");
+                    SayBarq("I'm listening.", "سامعك، اتفضل.");
+                }
             }));
         }
 
@@ -3776,7 +3870,11 @@ namespace livelywpf
         {
             if (_isExit || Dispatcher.HasShutdownStarted) return;
             Dispatcher.BeginInvoke(new Action(async () =>
-                await AnswerBarqVoiceQuestionAsync(utterance)));
+            {
+                if (barqVoicePanel != null)
+                    barqVoicePanel.AddActivity("YOU", utterance);
+                await AnswerBarqVoiceQuestionAsync(utterance);
+            }));
         }
 
         private async System.Threading.Tasks.Task AnswerBarqVoiceQuestionAsync(string utterance)
@@ -3830,6 +3928,8 @@ namespace livelywpf
                     System.Threading.CancellationToken.None);
 
                 if (_isExit || barqVoiceListener != session) return;
+                if (barqVoicePanel != null)
+                    barqVoicePanel.AddActivity("BARQ", reply);
                 if (barqVoiceSpeaker != null)
                 {
                     if (arabic && !barqVoiceSpeaker.SpeaksArabic)
@@ -3926,6 +4026,8 @@ namespace livelywpf
                 form.AcceptButton = save;
                 form.ShowDialog();
             }
+            if (barqVoicePanel != null)
+                barqVoicePanel.RefreshStatus();
         }
 
         private void ExecuteBarqVoiceCommand(livelywpf.Voice.BarqVoiceCommand command)

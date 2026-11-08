@@ -6,6 +6,10 @@ BARQ uses Gemini 3.8 Flash (REST `generateContent`) for conversational replies. 
 
 **This is not Gemini Live.** Gemini receives *text only*, never microphone audio. The app does not install a new Windows speech recognizer, speaker recognition system, microphone driver or voice model.
 
+## Open the BARQ Voice control window
+
+Click the **BARQ Voice** button in the main AM Lively header or right-click the system tray icon and choose **BARQ Voice - Open control panel**. The new WPF window shows microphone status, the installed speech recognizer, dictation support and whether a Gemini API key is configured. It also provides **Start/Stop listening**, **Configure Gemini key**, **Test speaker**, wallpaper quick actions and a small text-only Gemini conversation test. Voice transcripts and answers shown there are kept in memory while the window is open, not written to a log file. Closing the panel does not silently enable/disable the microphone; use **Stop listening** explicitly.
+
 ## Activating and configuring
 
 1. Have an installed English or Arabic Windows Speech Recognition engine, a working microphone and a local text-to-speech voice. **Windows 8.1 may not provide an Arabic recognizer by default.**

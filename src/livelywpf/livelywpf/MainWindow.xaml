@@ -621,6 +621,8 @@
                     <TextBlock Text="WALLPAPER  /  PERFORMANCE" FontWeight="SemiBold" FontSize="10" Foreground="{DynamicResource AMAccent}" Margin="0,3,0,0"/>
                 </StackPanel>
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="BARQ Voice" Style="{StaticResource AMNavButton}" Click="OpenBarqControlClick"
+                            Margin="0,0,10,0" ToolTip="Open BARQ voice control panel"/>
                     <Button Content="+ Import wallpaper" Style="{StaticResource AMPrimaryButton}" Click="Button_Click_InstallWallpaper" Margin="0,0,15,0" ToolTip="Import a supported wallpaper file"/>
                     <Image x:Name="image" Width="24" Height="24" Margin="0,0,2,0" Cursor="Hand"
                            ToolTip="Display layout and monitor information" Source="/images/monitor-50xw.png"

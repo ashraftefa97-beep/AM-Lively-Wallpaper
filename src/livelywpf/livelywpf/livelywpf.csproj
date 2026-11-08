@@ -444,6 +444,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Voice\BarqVoicePanel.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -456,6 +460,9 @@
     <Compile Include="Voice\BarqAttentionGate.cs" />
     <Compile Include="Voice\BarqGeminiClient.cs" />
     <Compile Include="Voice\BarqGeminiKeyStore.cs" />
+    <Compile Include="Voice\BarqVoicePanel.xaml.cs">
+      <DependentUpon>BarqVoicePanel.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Voice\BarqVoiceListener.cs" />
     <Compile Include="Voice\BarqQuestionParser.cs" />
     <Compile Include="Voice\BarqWebSearch.cs" />

@@ -138,20 +138,8 @@ namespace livelywpf
 
             lblVersionNumber.Text = "v" + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
-            //attribution document.
-            TextRange textRange = new TextRange(licenseDocument.ContentStart, licenseDocument.ContentEnd);
-            try
-            {
-                using (FileStream fileStream = File.Open(Path.Combine(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "docs", "license.rtf")), FileMode.Open, FileAccess.Read, FileShare.Read))
-                {
-                    textRange.Load(fileStream, System.Windows.DataFormats.Rtf);
-                }
-                licenseFlowDocumentViewer.Document = licenseDocument;
-            }
-            catch(Exception e)
-            {
-                Logger.Error("Failed to load license file:" + e.Message);
-            }
+            // License.txt and NOTICE-AM.md remain included with every installer.
+            // The About page links to these instead of embedding a large RTF viewer.
 
             //whats new (changelog) screen!
             if (!SaveData.config.AppVersion.Equals(System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString(), StringComparison.OrdinalIgnoreCase)
@@ -3792,6 +3780,33 @@ namespace livelywpf
                         "The wallpaper command could not be completed.", System.Windows.Forms.ToolTipIcon.Warning);
                 }
             }));
+        }
+
+        private void OpenAmLicenseFile(object sender, RoutedEventArgs e)
+        {
+            OpenAmLegalFile("License.txt");
+        }
+
+        private void OpenAmNoticesFile(object sender, RoutedEventArgs e)
+        {
+            OpenAmLegalFile("NOTICE-AM.md");
+        }
+
+        private void OpenAmLegalFile(string fileName)
+        {
+            try
+            {
+                string location = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, fileName);
+                if (!File.Exists(location))
+                    throw new FileNotFoundException("Legal file is not installed", location);
+                Process.Start(new ProcessStartInfo(location) { UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                Logger.Warn(ex, "Unable to open legal file");
+                MessageBox.Show("The legal file could not be opened. Check the installation folder.",
+                    "AM Lively Wallpaper", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
         }
     }
 }

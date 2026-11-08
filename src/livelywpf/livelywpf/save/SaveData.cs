@@ -706,7 +706,7 @@ namespace livelywpf
                 ProcessTimerInterval = 500; //reduce to 250 for quicker response.
                 Language = CultureInfo.CurrentCulture.Name;//"en"; 
                 Theme = 1; // BARQ dark theme
-                UiAnimationsMode = 1; // Reduced motion (default)
+                UiAnimationsMode = 2; // Win11 lightweight default: transitions off
                 StreamQuality = StreamQualitySuggestion.h720p;
                 AppTransparencyPercent = 0.9f;
                 GenerateTile = true;

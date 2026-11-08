@@ -14,19 +14,19 @@
                       
         mc:Ignorable="d"
         ResizeMode="CanResize"
-        MinWidth="980" MinHeight="630"
-        Width="1080"    Height="720"
+        MinWidth="1000" MinHeight="650"
+        Width="1140"    Height="740"
         ShowTitleBar ="False"
         ShowIconOnTitleBar="False"
         ShowMaxRestoreButton="False"
-        Title="AM Lively Wallpaper"
+        Title="AM Lively Wallpaper 11"
         WindowStartupLocation="CenterScreen"
         UseLayoutRounding="True" SnapsToDevicePixels="True"
         TextOptions.TextFormattingMode="Display" TextOptions.TextRenderingMode="ClearType"
         WindowTransitionsEnabled="False" 
         GlowBrush="{DynamicResource AMAccent}"
-        Background="{DynamicResource AMBackground}" Foreground="{DynamicResource AMText}" FontFamily="Segoe UI" FontSize="13"
-        AllowsTransparency="True" WindowStyle="None" Drop="MetroWindow_Drop"
+        Background="{DynamicResource AMBackground}" Foreground="{DynamicResource AMText}" FontFamily="Segoe UI Variable, Segoe UI, Tahoma" FontSize="13"
+        AllowsTransparency="False" WindowStyle="None" Drop="MetroWindow_Drop"
         AllowDrop="true">
 
     <Controls:MetroWindow.Resources>
@@ -580,8 +580,8 @@
                                     <Image Source="{StaticResource AMBrandMark}" Stretch="Uniform"/>
                                 </Border>
                                 <StackPanel Grid.Column="1" Margin="18,0,12,0" VerticalAlignment="Center">
-                                    <TextBlock Text="AM Lively Wallpaper" FontSize="25" FontWeight="SemiBold" Foreground="{DynamicResource AMText}"/>
-                                    <TextBlock Text="Dynamic wallpapers and performance control" Foreground="{DynamicResource AMMuted}" FontSize="13" Margin="0,6,0,0"/>
+                                    <TextBlock Text="AM Lively Wallpaper 11" FontSize="25" FontWeight="SemiBold" Foreground="{DynamicResource AMText}"/>
+                                    <TextBlock Text="Windows 11 edition · low-overhead WPF interface" Foreground="{DynamicResource AMMuted}" FontSize="13" Margin="0,6,0,0"/>
                                     <TextBlock Text="Based on Lively Wallpaper v0.9.6.0 by rocksdanister · Microsoft Public License (MS-PL)" Foreground="{DynamicResource AMMuted}" FontSize="11" Margin="0,8,0,0" TextWrapping="Wrap"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
@@ -617,8 +617,8 @@
                     <Image Source="{StaticResource AMBrandMark}" Stretch="Uniform"/>
                 </Border>
                 <StackPanel Grid.Column="1" Margin="13,3,0,0" VerticalAlignment="Center">
-                    <TextBlock Text="AM LIVELY" FontWeight="Bold" FontSize="19" Foreground="{DynamicResource AMText}"/>
-                    <TextBlock Text="WALLPAPER  /  PERFORMANCE" FontWeight="SemiBold" FontSize="10" Foreground="{DynamicResource AMAccent}" Margin="0,3,0,0"/>
+                    <TextBlock Text="AM LIVELY 11" FontWeight="Bold" FontSize="19" Foreground="{DynamicResource AMText}"/>
+                    <TextBlock Text="WALLPAPER / LIGHTWEIGHT" FontWeight="SemiBold" FontSize="10" Foreground="{DynamicResource AMAccent}" Margin="0,3,0,0"/>
                 </StackPanel>
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button Content="BARQ Voice" Style="{StaticResource AMNavButton}" Click="OpenBarqControlClick"

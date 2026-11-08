@@ -10,7 +10,7 @@
     WindowTransitionsEnabled="False"
     Background="{DynamicResource AMBackground}"
     Foreground="{DynamicResource AMText}"
-    FontFamily="Segoe UI, Tahoma" FontSize="13"
+    FontFamily="Segoe UI Variable, Segoe UI, Tahoma" FontSize="13"
     TextOptions.TextFormattingMode="Display"
     TextOptions.TextRenderingMode="ClearType"
     UseLayoutRounding="True" SnapsToDevicePixels="True">

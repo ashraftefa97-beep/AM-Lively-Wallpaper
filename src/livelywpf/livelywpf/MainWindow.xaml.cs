@@ -136,7 +136,7 @@ namespace livelywpf
 
             SubcribeUI();
             // Attach motion events after restoring the original feature settings.
-            if (!SaveData.config.UiAnimationsMode.HasValue) SaveData.config.UiAnimationsMode = 1;
+            if (!SaveData.config.UiAnimationsMode.HasValue) SaveData.config.UiAnimationsMode = 2;
             comboBoxAnimations.SelectedIndex = Math.Max(0, Math.Min(2, SaveData.config.UiAnimationsMode.Value));
             comboBoxAnimations.SelectionChanged += ComboBoxAnimations_SelectionChanged;
             tabControl1.SelectionChanged += AnimateTabSelection;

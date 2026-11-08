@@ -3,21 +3,21 @@
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro">
             <!-- BARQ-inspired identity; this is a scalable vector trace of the user-supplied flower mark. -->
-            <SolidColorBrush x:Key="AMBackground" Color="#0F1115"/>
-            <SolidColorBrush x:Key="AMSidebar" Color="#13161B"/>
-            <SolidColorBrush x:Key="AMSurface" Color="#191D24"/>
-            <SolidColorBrush x:Key="AMAccent" Color="#E5394B"/>
+            <SolidColorBrush x:Key="AMBackground" Color="#101216"/>
+            <SolidColorBrush x:Key="AMSidebar" Color="#151820"/>
+            <SolidColorBrush x:Key="AMSurface" Color="#1B1F29"/>
+            <SolidColorBrush x:Key="AMAccent" Color="#E1485D"/>
             <SolidColorBrush x:Key="AMText" Color="#F5F6F8"/>
-            <SolidColorBrush x:Key="AMMuted" Color="#9EA7B6"/>
-            <SolidColorBrush x:Key="AMBorder" Color="#303742"/>
+            <SolidColorBrush x:Key="AMMuted" Color="#A8B3C4"/>
+            <SolidColorBrush x:Key="AMBorder" Color="#333B49"/>
             <DrawingImage x:Key="AMBrandMark">
                 <DrawingImage.Drawing>
-                    <GeometryDrawing Brush="#E5394B" Geometry="M 7,34 L 8,38 L 12,42 L 17,44 L 22,43 L 22,42 L 18,39 L 17,35 L 10,35 L 9,34 Z M 23,30 L 20,33 L 20,35 L 21,37 L 24,39 L 27,34 L 24,30 Z M 29,27 L 31,32 L 37,32 L 37,30 L 34,26 Z M 18,27 L 13,25 L 11,27 L 10,31 L 11,32 L 15,32 L 17,30 L 17,28 Z M 41,15 L 41,17 L 37,23 L 40,29 L 40,33 L 38,35 L 36,35 L 35,36 L 30,35 L 29,36 L 29,38 L 24,43 L 26,44 L 30,44 L 35,42 L 38,39 L 39,35 L 43,31 L 45,27 L 45,21 L 44,20 L 44,18 Z M 36,15 L 32,15 L 30,17 L 30,19 L 29,20 L 34,22 L 37,18 L 37,16 Z M 10,15 L 10,17 L 13,21 L 18,20 L 16,15 Z M 23,8 L 20,13 L 23,17 L 24,17 L 27,14 L 27,12 L 26,10 Z M 25,4 L 25,5 L 29,8 L 30,12 L 37,12 L 38,13 L 40,13 L 39,9 L 35,5 L 30,3 Z M 23,4 L 21,3 L 16,3 L 12,5 L 9,8 L 8,12 L 4,16 L 2,20 L 2,26 L 3,27 L 3,29 L 6,32 L 6,30 L 10,24 L 7,18 L 7,14 L 9,12 L 11,12 L 12,11 L 17,12 L 18,11 L 18,9 Z"/>
+                    <GeometryDrawing Brush="#E1485D" Geometry="M 7,34 L 8,38 L 12,42 L 17,44 L 22,43 L 22,42 L 18,39 L 17,35 L 10,35 L 9,34 Z M 23,30 L 20,33 L 20,35 L 21,37 L 24,39 L 27,34 L 24,30 Z M 29,27 L 31,32 L 37,32 L 37,30 L 34,26 Z M 18,27 L 13,25 L 11,27 L 10,31 L 11,32 L 15,32 L 17,30 L 17,28 Z M 41,15 L 41,17 L 37,23 L 40,29 L 40,33 L 38,35 L 36,35 L 35,36 L 30,35 L 29,36 L 29,38 L 24,43 L 26,44 L 30,44 L 35,42 L 38,39 L 39,35 L 43,31 L 45,27 L 45,21 L 44,20 L 44,18 Z M 36,15 L 32,15 L 30,17 L 30,19 L 29,20 L 34,22 L 37,18 L 37,16 Z M 10,15 L 10,17 L 13,21 L 18,20 L 16,15 Z M 23,8 L 20,13 L 23,17 L 24,17 L 27,14 L 27,12 L 26,10 Z M 25,4 L 25,5 L 29,8 L 30,12 L 37,12 L 38,13 L 40,13 L 39,9 L 35,5 L 30,3 Z M 23,4 L 21,3 L 16,3 L 12,5 L 9,8 L 8,12 L 4,16 L 2,20 L 2,26 L 3,27 L 3,29 L 6,32 L 6,30 L 10,24 L 7,18 L 7,14 L 9,12 L 11,12 L 12,11 L 17,12 L 18,11 L 18,9 Z"/>
                 </DrawingImage.Drawing>
             </DrawingImage>
 
-            <SolidColorBrush x:Key="AMHover" Color="#242935"/>
-            <SolidColorBrush x:Key="AMSelection" Color="#32242C"/>
+            <SolidColorBrush x:Key="AMHover" Color="#292F3A"/>
+            <SolidColorBrush x:Key="AMSelection" Color="#38252E"/>
             <Thickness x:Key="AMSpace1">4</Thickness>
             <Thickness x:Key="AMSpace2">8</Thickness>
             <Thickness x:Key="AMSpace3">12</Thickness>
@@ -86,13 +86,13 @@
                 <Setter Property="BorderBrush" Value="{DynamicResource AMBorder}"/>
                 <Setter Property="BorderThickness" Value="1"/>
                 <Setter Property="Padding" Value="14,8"/>
-                <Setter Property="FontFamily" Value="Segoe UI"/>
+                <Setter Property="FontFamily" Value="Segoe UI Variable, Segoe UI, Tahoma"/>
                 <Setter Property="FontSize" Value="13"/>
                 <Setter Property="Cursor" Value="Hand"/>
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type Button}">
-                            <Border x:Name="chrome" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="9" SnapsToDevicePixels="True">
+                            <Border x:Name="chrome" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="11" SnapsToDevicePixels="True">
                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True"/>
                             </Border>
                             <ControlTemplate.Triggers>

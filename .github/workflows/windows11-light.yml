@@ -1,0 +1,141 @@
+name: Build Windows 11 Lightweight
+on:
+  push:
+    branches: [windows-11]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: windows11-light-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: windows-2022
+    timeout-minutes: 50
+    defaults:
+      run:
+        shell: powershell
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install original-generation build tools (VS 2019)
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $bootstrapper = Join-Path $env:RUNNER_TEMP 'vs_buildtools_2019.exe'
+          Invoke-WebRequest 'https://aka.ms/vs/16/release/vs_buildtools.exe' -OutFile $bootstrapper -UseBasicParsing
+          $signature = Get-AuthenticodeSignature $bootstrapper
+          if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Subject -notmatch 'Microsoft Corporation') { throw 'Invalid Microsoft build-tools signature' }
+          $arguments = '--quiet --wait --norestart --nocache --installPath C:\AM-BuildTools2019 --add Microsoft.VisualStudio.Workload.ManagedDesktopBuildTools --add Microsoft.Net.Component.4.7.2.TargetingPack --add Microsoft.Net.Component.4.7.2.SDK'
+          $process = Start-Process $bootstrapper -ArgumentList $arguments -Wait -PassThru
+          if ($process.ExitCode -notin @(0,3010)) { throw "VS 2019 install failed: $($process.ExitCode)" }
+          $msbuild = 'C:\AM-BuildTools2019\MSBuild\Current\Bin\MSBuild.exe'
+          if (!(Test-Path $msbuild)) { throw 'VS 2019 MSBuild not installed' }
+          & $msbuild -version
+          if ($LASTEXITCODE -ne 0) { throw 'MSBuild verification failed' }
+      - name: Verify preinstalled NuGet and Inno Setup 6
+        run: |
+          $ErrorActionPreference = 'Stop'
+          # windows-2022 already ships NuGet and Inno Setup 6.
+          # Using the runner's installed tools avoids unreliable historical release downloads.
+          $nugetCommand = Get-Command 'nuget.exe' -ErrorAction SilentlyContinue
+          if ($null -eq $nugetCommand) { throw 'NuGet.exe is missing from windows-2022 runner.' }
+          $nuget = $nugetCommand.Source
+          & $nuget help | Select-Object -First 3
+          if ($LASTEXITCODE -ne 0) { throw 'Preinstalled NuGet failed to execute.' }
+          $innoCandidates = @(
+            "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe",
+            "$env:ProgramFiles\Inno Setup 6\ISCC.exe",
+            'C:\ProgramData\chocolatey\bin\ISCC.exe'
+          )
+          $innoCommand = Get-Command 'ISCC.exe' -ErrorAction SilentlyContinue
+          if ($null -ne $innoCommand) { $innoCandidates += $innoCommand.Source }
+          $inno = $innoCandidates | Where-Object { $_ -and (Test-Path -LiteralPath $_ -PathType Leaf) } | Select-Object -First 1
+          if (-not $inno) { throw 'Preinstalled Inno Setup 6 compiler (ISCC.exe) is missing.' }
+          Write-Host "NuGet: $nuget"
+          Write-Host "Inno compiler: $inno"
+          Write-Host "Inno version: $([Diagnostics.FileVersionInfo]::GetVersionInfo($inno).ProductVersion)"
+          "AM_NUGET=$nuget" | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+          "AM_INNO=$inno" | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Restore verified legacy runtime from cache
+        id: legacy-runtime
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/lively0960.zip
+          key: lively-0.9.6.0-x86-72BC44092887320897D2AF7A43BFF63CD0998E19A4C5A3ABFC6B930ADE776D84
+      - name: Get exact upstream v0.9.6.0 runtime
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $archive = Join-Path $env:RUNNER_TEMP 'lively0960.zip'
+          $expectedSize = 120774111
+          $expectedSha256 = '72BC44092887320897D2AF7A43BFF63CD0998E19A4C5A3ABFC6B930ADE776D84'
+          function Test-OfficialArchive {
+            if (!(Test-Path $archive)) { return $false }
+            if ((Get-Item $archive).Length -ne $expectedSize) { return $false }
+            return (Get-FileHash $archive -Algorithm SHA256).Hash -eq $expectedSha256
+          }
+          # A cache is never trusted without verifying both exact size and SHA-256.
+          if (!(Test-OfficialArchive)) {
+            Remove-Item $archive -Force -ErrorAction SilentlyContinue
+            $downloaded = $false
+            $urls = @(
+              'https://github.com/lively-community/lively/releases/download/v0.9.6.0/lively_portable_x86_full_v0960.zip',
+              'https://github.com/rocksdanister/lively/releases/download/v0.9.6.0/lively_portable_x86_full_v0960.zip'
+            )
+            foreach ($url in $urls) {
+              for ($attempt = 1; $attempt -le 4; $attempt++) {
+                try {
+                  Write-Host "Fetching official legacy release (attempt $attempt)"
+                  Invoke-WebRequest -Uri $url -OutFile $archive -UseBasicParsing -TimeoutSec 300
+                  if (!(Test-OfficialArchive)) { throw 'Download was incomplete or failed SHA-256 verification' }
+                  $downloaded = $true
+                  break
+                } catch {
+                  Remove-Item $archive -Force -ErrorAction SilentlyContinue
+                  Write-Warning "Legacy release download failed: $($_.Exception.Message)"
+                  if ($attempt -lt 4) { Start-Sleep -Seconds (12 * $attempt) }
+                }
+              }
+              if ($downloaded) { break }
+            }
+            if (!$downloaded) { throw 'Official v0.9.6.0 release could not be retrieved and verified after retries.' }
+          } else {
+            Write-Host 'Using hash-verified original runtime from GitHub Actions cache.'
+          }
+          if (!(Test-OfficialArchive)) { throw 'Official legacy runtime SHA-256 verification failed.' }
+          Write-Host "Verified SHA256: $expectedSha256"
+          Expand-Archive -LiteralPath $archive -DestinationPath "$env:RUNNER_TEMP\lively0960"
+          $original = @(Get-ChildItem "$env:RUNNER_TEMP\lively0960" -Filter livelywpf.exe -Recurse -File)
+          if ($original.Count -ne 1) { throw 'Expected exactly one original application' }
+          "AM_ORIGINAL=$($original[0].DirectoryName)" | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Cache verified legacy release after download
+        if: steps.legacy-runtime.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/lively0960.zip
+          key: lively-0.9.6.0-x86-72BC44092887320897D2AF7A43BFF63CD0998E19A4C5A3ABFC6B930ADE776D84
+      - name: Build, test and package x86
+        run: |
+          .\build\Build-Win11.ps1 -OriginalPortable $env:AM_ORIGINAL -NuGet $env:AM_NUGET -MSBuild 'C:\AM-BuildTools2019\MSBuild\Current\Bin\MSBuild.exe' -Inno $env:AM_INNO -Installer
+      - name: Read-only Windows process smoke test
+        run: |
+          .\build\Test-Snapshot.ps1 -Compiler 'C:\AM-BuildTools2019\MSBuild\Current\Bin\Roslyn\csc.exe'
+      - name: Upload EXE installer and portable app
+        uses: actions/upload-artifact@v4
+        with:
+          name: AM-Lively-Wallpaper-Win11-Light-x86-${{ github.run_number }}
+          path: |
+            dist/AM-Lively-Wallpaper-Win11-Setup-x86.exe
+            dist/portable/
+            dist/runtime-sha256.csv
+          if-no-files-found: error
+          retention-days: 30
+      - name: Upload build diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: AM-Lively-Win11-diagnostics-${{ github.run_number }}
+          path: |
+            dist/*.binlog
+            dist/*.log
+            ${{ runner.temp }}/dd_*.log
+          if-no-files-found: ignore
+          retention-days: 7

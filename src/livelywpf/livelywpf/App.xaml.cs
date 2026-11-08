@@ -56,8 +56,8 @@ namespace livelywpf
         private static void ApplyAmPalette(bool light)
         {
             var tokens = light
-                ? new [] { "#F5F7FA", "#EDF1F6", "#FFFFFF", "#B52C47", "#202835", "#536073", "#CBD3DE", "#F8E8EC", "#E6EBF2" }
-                : new [] { "#0F1115", "#13161B", "#191D24", "#E5394B", "#F5F6F8", "#9EA7B6", "#303742", "#32242C", "#242935" };
+                ? new [] { "#F4F6F9", "#EAF0F6", "#FFFFFF", "#B9344B", "#1D2530", "#526173", "#CDD5E0", "#F8E7EC", "#E5ECF3" }
+                : new [] { "#101216", "#151820", "#1B1F29", "#E1485D", "#F5F6F8", "#A8B3C4", "#333B49", "#38252E", "#292F3A" };
             var names = new [] { "AMBackground", "AMSidebar", "AMSurface", "AMAccent", "AMText", "AMMuted", "AMBorder", "AMSelection", "AMHover" };
             for (int i = 0; i < names.Length; ++i)
             {
@@ -74,7 +74,7 @@ namespace livelywpf
             }
             else
             {
-                PathData = Path.Combine(System.Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "AM Lively Wallpaper");
+                PathData = Path.Combine(System.Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "AM Lively Wallpaper 11");
             }
             //delete residue tempfiles if any!
             FileOperations.EmptyDirectory(Path.Combine(PathData, "tmpdata"));

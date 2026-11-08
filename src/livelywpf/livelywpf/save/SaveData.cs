@@ -527,6 +527,7 @@ namespace livelywpf
                                             new SupportedThemes("DarkSienna","Sienna","BaseDark"),
                                             //new SupportedThemes("LightIndigo","Indigo","BaseLight"),
                                             //new SupportedThemes("LightCrimson","Crimson","BaseLight"),
+                                            new SupportedThemes("BARQ Soft Light","Red","BaseLight"),
         }; 
 
         [Serializable]

@@ -1,20 +1,20 @@
 <UserControl x:Class="livelywpf.ProcessManager.ProcessManagerView"
   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Grid Background="#0F1115" Margin="5,12,5,4">
+    <Grid Background="{DynamicResource AMBackground}" Margin="5,12,5,4">
         <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-        <Border Grid.Row="0" Background="#191D24" BorderBrush="#303742" BorderThickness="1" CornerRadius="13" Padding="16" Margin="0,0,0,12">
+        <Border Grid.Row="0" Background="{DynamicResource AMSurface}" BorderBrush="{DynamicResource AMBorder}" BorderThickness="1" CornerRadius="13" Padding="16" Margin="0,0,0,12">
             <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                 <StackPanel>
-                    <TextBlock Text="Process control" Foreground="#F5F6F8" FontSize="21" FontWeight="SemiBold"/>
-                    <TextBlock Text="Close only verified optional apps. One-click restore is always available." Foreground="#9EA7B6" FontSize="12" Margin="0,6,0,0"/>
+                    <TextBlock Text="Process control" Foreground="{DynamicResource AMText}" FontSize="21" FontWeight="SemiBold"/>
+                    <TextBlock Text="Close only verified optional apps. One-click restore is always available." Foreground="{DynamicResource AMMuted}" FontSize="12" Margin="0,6,0,0"/>
                 </StackPanel>
-                <Border Grid.Column="1" Background="#42242C" BorderBrush="#E5394B" BorderThickness="1" CornerRadius="8" Padding="12,6" VerticalAlignment="Center">
-                    <TextBlock Text="SAFE MODE  •  MANUAL APPROVAL" Foreground="#FFC4CC" FontWeight="SemiBold" FontSize="10"/>
+                <Border Grid.Column="1" Background="{DynamicResource AMSelection}" BorderBrush="{DynamicResource AMAccent}" BorderThickness="1" CornerRadius="8" Padding="12,6" VerticalAlignment="Center">
+                    <TextBlock Text="SAFE MODE  •  MANUAL APPROVAL" Foreground="{DynamicResource AMText}" FontWeight="SemiBold" FontSize="10"/>
                 </Border>
             </Grid>
         </Border>
-        <Border Grid.Row="1" Background="#13161B" BorderBrush="#303742" BorderThickness="1" CornerRadius="13" Padding="13" Margin="0,0,0,12">
+        <Border Grid.Row="1" Background="{DynamicResource AMSidebar}" BorderBrush="{DynamicResource AMBorder}" BorderThickness="1" CornerRadius="13" Padding="13" Margin="0,0,0,12">
             <StackPanel>
                 <WrapPanel x:Name="Actions" VerticalAlignment="Center">
                     <ComboBox x:Name="Modes" Width="158" Height="32" SelectionChanged="ModeChanged" Margin="0,0,8,0"/>
@@ -24,16 +24,16 @@
                     <CheckBox x:Name="AutoRestore" Content="Auto restore on exit" Foreground="#E9EBF1" VerticalAlignment="Center" Checked="AutoChanged" Unchecked="AutoChanged"/>
                 </WrapPanel>
                 <Grid Margin="0,12,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                    <TextBox x:Name="ModeList" Height="32" Padding="9,5" Background="#191D24" Foreground="#E9EBF1" BorderBrush="#303742" BorderThickness="1"
+                    <TextBox x:Name="ModeList" Height="32" Padding="9,5" Background="{DynamicResource AMSurface}" Foreground="#E9EBF1" BorderBrush="{DynamicResource AMBorder}" BorderThickness="1"
                              ToolTip="Comma separated process names; protection cannot be overridden."/>
                     <Button Grid.Column="1" Content="Save mode list" Click="SaveMode" Style="{StaticResource AMNavButton}" Margin="8,0,0,0"/>
                 </Grid>
             </StackPanel>
         </Border>
-        <Border Grid.Row="2" Background="#13161B" BorderBrush="#303742" BorderThickness="1" CornerRadius="12" Padding="7">
+        <Border Grid.Row="2" Background="{DynamicResource AMSidebar}" BorderBrush="{DynamicResource AMBorder}" BorderThickness="1" CornerRadius="12" Padding="7">
             <DataGrid x:Name="Rows" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Extended" EnableRowVirtualization="True" EnableColumnVirtualization="True"
-                      CanUserAddRows="False" Background="#13161B" Foreground="#F5F6F8" BorderThickness="0" GridLinesVisibility="Horizontal"
-                      HorizontalGridLinesBrush="#303742" RowBackground="#13161B" AlternatingRowBackground="#191D24" HeadersVisibility="Column">
+                      CanUserAddRows="False" Background="{DynamicResource AMSidebar}" Foreground="{DynamicResource AMText}" BorderThickness="0" GridLinesVisibility="Horizontal"
+                      HorizontalGridLinesBrush="{DynamicResource AMBorder}" RowBackground="{DynamicResource AMSidebar}" AlternatingRowBackground="{DynamicResource AMSurface}" HeadersVisibility="Column">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Process" Binding="{Binding Name}" Width="145"/>
                     <DataGridTextColumn Header="PID" Binding="{Binding Pid}" Width="55"/>
@@ -46,10 +46,10 @@
                 </DataGrid.Columns>
             </DataGrid>
         </Border>
-        <Border Grid.Row="3" Background="#191D24" BorderBrush="#303742" BorderThickness="1" CornerRadius="11" Margin="0,12,0,0" Padding="11">
+        <Border Grid.Row="3" Background="{DynamicResource AMSurface}" BorderBrush="{DynamicResource AMBorder}" BorderThickness="1" CornerRadius="11" Margin="0,12,0,0" Padding="11">
             <StackPanel>
                 <TextBlock x:Name="Metrics" Foreground="#C8D0DC" FontSize="12" TextWrapping="Wrap"/>
-                <TextBox x:Name="Journal" IsReadOnly="True" Height="58" Margin="0,8,0,0" Background="#13161B" Foreground="#9EA7B6" BorderThickness="0" Padding="7"
+                <TextBox x:Name="Journal" IsReadOnly="True" Height="58" Margin="0,8,0,0" Background="{DynamicResource AMSidebar}" Foreground="{DynamicResource AMMuted}" BorderThickness="0" Padding="7"
                          TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
             </StackPanel>
         </Border>

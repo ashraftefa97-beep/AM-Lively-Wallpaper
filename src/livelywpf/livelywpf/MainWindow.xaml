@@ -22,8 +22,8 @@
         Title="AM Lively Wallpaper"
         WindowStartupLocation="CenterScreen"
         WindowTransitionsEnabled="False" 
-        GlowBrush="#E5394B"
-        Background="#0F1115" Foreground="#F5F6F8" FontFamily="Segoe UI" FontSize="13"
+        GlowBrush="{DynamicResource AMAccent}"
+        Background="{DynamicResource AMBackground}" Foreground="{DynamicResource AMText}" FontFamily="Segoe UI" FontSize="13"
         AllowsTransparency="True" WindowStyle="None" Drop="MetroWindow_Drop"
         AllowDrop="true">
 
@@ -81,7 +81,7 @@
             <ColumnDefinition Width="63*"/>
             <ColumnDefinition Width="34*"/>
         </Grid.ColumnDefinitions>
-        <Controls:MetroTabControl Name="tabControl1" Grid.Row="1" Grid.ColumnSpan="4" Margin="0,5,0,0" Background="#0F1115" Foreground="#F5F6F8">
+        <Controls:MetroTabControl Name="tabControl1" Grid.Row="1" Grid.ColumnSpan="4" Margin="0,5,0,0" Background="{DynamicResource AMBackground}" Foreground="{DynamicResource AMText}">
             <Controls:MetroTabControl.Resources>
                 <Style TargetType="{x:Type TabItem}">
                     <Setter Property="FontFamily" Value="Segoe UI"/>
@@ -92,27 +92,27 @@
                 </Style>
             </Controls:MetroTabControl.Resources>
             <TabItem Name="libTab" Header="Library">
-                <Grid Background="#0F1115" Margin="4,10,4,4">
+                <Grid Background="{DynamicResource AMBackground}" Margin="4,10,4,4">
                     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                     <Grid.ColumnDefinitions><ColumnDefinition Width="2.2*"/><ColumnDefinition Width="1*"/></Grid.ColumnDefinitions>
                     <Grid Grid.Row="0" Grid.ColumnSpan="2" Margin="0,0,0,16">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="Your wallpaper collection" Foreground="#F5F6F8" FontSize="22" FontWeight="SemiBold"/>
-                            <TextBlock Text="Browse, preview and apply live backgrounds" Foreground="#9EA7B6" FontSize="12" Margin="0,5,0,0"/>
+                            <TextBlock Text="Your wallpaper collection" Foreground="{DynamicResource AMText}" FontSize="22" FontWeight="SemiBold"/>
+                            <TextBlock Text="Browse, preview and apply live backgrounds" Foreground="{DynamicResource AMMuted}" FontSize="12" Margin="0,5,0,0"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                             <Button Content="+ Import" Click="Button_Click_InstallWallpaper" Style="{StaticResource AMNavButton}" Margin="0,0,8,0"/>
                             <Button Content="+ Create wallpaper" Click="Button_Click_CreateWallpaper" Style="{StaticResource AMPrimaryButton}"/>
                         </StackPanel>
                     </Grid>
-                    <Border Grid.Row="1" Grid.Column="0" Margin="0,0,14,0" Background="#13161B" BorderBrush="#303742" BorderThickness="1" CornerRadius="14" Padding="10">
+                    <Border Grid.Row="1" Grid.Column="0" Margin="0,0,14,0" Background="{DynamicResource AMSidebar}" BorderBrush="{DynamicResource AMBorder}" BorderThickness="1" CornerRadius="14" Padding="10">
                         <DockPanel LastChildFill="True">
                             <Grid DockPanel.Dock="Top" Margin="4,4,4,12">
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                                 <Grid>
-                                    <TextBox x:Name="textBoxLibrarySearch" Height="34" Padding="10,6" Background="#191D24" Foreground="#F5F6F8" BorderBrush="#303742" BorderThickness="1" TextChanged="TextBoxLibrarySearch_TextChanged"/>
-                                    <TextBlock IsHitTestVisible="False" Text="Search wallpapers..." Foreground="#9EA7B6" Margin="12,0,0,0" VerticalAlignment="Center">
+                                    <TextBox x:Name="textBoxLibrarySearch" Height="34" Padding="10,6" Background="{DynamicResource AMSurface}" Foreground="{DynamicResource AMText}" BorderBrush="{DynamicResource AMBorder}" BorderThickness="1" TextChanged="TextBoxLibrarySearch_TextChanged"/>
+                                    <TextBlock IsHitTestVisible="False" Text="Search wallpapers..." Foreground="{DynamicResource AMMuted}" Margin="12,0,0,0" VerticalAlignment="Center">
                                         <TextBlock.Style>
                                             <Style TargetType="{x:Type TextBlock}">
                                                 <Setter Property="Visibility" Value="Collapsed"/>
@@ -123,7 +123,7 @@
                                 </Grid>
                                 <Button Grid.Column="1" Content="?" ToolTip="Wallpaper help" Click="Button_Click_HowTo" Style="{StaticResource AMNavButton}" Margin="8,0,0,0"/>
                             </Grid>
-                            <ListBox x:Name="wallpapersLV" Background="#13161B" Foreground="#F5F6F8" BorderThickness="0" SelectionChanged="WallpapersLV_SelectionChanged"
+                            <ListBox x:Name="wallpapersLV" Background="{DynamicResource AMSidebar}" Foreground="{DynamicResource AMText}" BorderThickness="0" SelectionChanged="WallpapersLV_SelectionChanged"
                                      ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.ScrollChanged="WallpapersLV_ScrollChanged">
                                 
                         <!--  ScrollViewer.IsDeferredScrollingEnabled="True"-->
@@ -161,11 +161,11 @@
                             </ListBox>
                         </DockPanel>
                     </Border>
-                    <Border Grid.Row="1" Grid.Column="1" Background="#191D24" BorderBrush="#303742" BorderThickness="1" CornerRadius="14" Padding="15">
+                    <Border Grid.Row="1" Grid.Column="1" Background="{DynamicResource AMSurface}" BorderBrush="{DynamicResource AMBorder}" BorderThickness="1" CornerRadius="14" Padding="15">
                         <DockPanel LastChildFill="True">
                             <StackPanel DockPanel.Dock="Top" Margin="0,0,0,12">
-                                <TextBlock Text="LIVE PREVIEW" FontSize="11" FontWeight="Bold" Foreground="#E5394B"/>
-                                <TextBlock Text="Wallpaper details" FontSize="17" FontWeight="SemiBold" Foreground="#F5F6F8" Margin="0,5,0,0"/>
+                                <TextBlock Text="LIVE PREVIEW" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource AMAccent}"/>
+                                <TextBlock Text="Wallpaper details" FontSize="17" FontWeight="SemiBold" Foreground="{DynamicResource AMText}" Margin="0,5,0,0"/>
                             </StackPanel>
                             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                                 <ItemsControl x:Name="tileInfo">
@@ -199,19 +199,19 @@
                                         </StackPanel>
                                         -->
                                         <!--  Foreground="#FFAAA8A8"-->
-                                        <TextBox x:Name="LibraryTitle" Background="#191D24" IsReadOnly="True" FontSize="15" TextWrapping="Wrap"  BorderThickness="0,0,0,1" Text="{Binding LivelyInfo.Title}" 
+                                        <TextBox x:Name="LibraryTitle" Background="{DynamicResource AMSurface}" IsReadOnly="True" FontSize="15" TextWrapping="Wrap"  BorderThickness="0,0,0,1" Text="{Binding LivelyInfo.Title}" 
                                                  Foreground="{DynamicResource AccentColorBrush}" Margin="0,0,0,1"/>
-                                        <TextBox x:Name="LibraryDesc" Background="#191D24" IsReadOnly="True" TextWrapping="Wrap" BorderThickness="0" Text="{Binding LivelyInfo.Desc}"/>
-                                        <TextBox IsReadOnly="True" Background="#191D24" TextWrapping="WrapWithOverflow"  Text="{x:Static p:Resources.txtLabel12}"  BorderThickness="0,0,0,1" 
+                                        <TextBox x:Name="LibraryDesc" Background="{DynamicResource AMSurface}" IsReadOnly="True" TextWrapping="Wrap" BorderThickness="0" Text="{Binding LivelyInfo.Desc}"/>
+                                        <TextBox IsReadOnly="True" Background="{DynamicResource AMSurface}" TextWrapping="WrapWithOverflow"  Text="{x:Static p:Resources.txtLabel12}"  BorderThickness="0,0,0,1" 
                                                  Foreground="{DynamicResource AccentColorBrush2}"/>
-                                        <TextBox x:Name="LibraryType" Background="#191D24" IsReadOnly="True" TextWrapping="Wrap" BorderThickness="0" Text="{Binding Type}"/>
-                                        <TextBox IsReadOnly="True" Background="#191D24" TextWrapping="WrapWithOverflow"  Text="{x:Static p:Resources.txtLabel13}"  BorderThickness="0,0,0,1" 
+                                        <TextBox x:Name="LibraryType" Background="{DynamicResource AMSurface}" IsReadOnly="True" TextWrapping="Wrap" BorderThickness="0" Text="{Binding Type}"/>
+                                        <TextBox IsReadOnly="True" Background="{DynamicResource AMSurface}" TextWrapping="WrapWithOverflow"  Text="{x:Static p:Resources.txtLabel13}"  BorderThickness="0,0,0,1" 
                                                  Foreground="{DynamicResource AccentColorBrush2}"/>
-                                        <TextBox x:Name="LibraryAuthor" Background="#191D24" IsReadOnly="True" TextWrapping="Wrap" BorderThickness="0" Text="{Binding LivelyInfo.Author}"/>
-                                        <TextBox  IsReadOnly="True" Background="#191D24" TextWrapping="WrapWithOverflow" Text="{x:Static p:Resources.txtLabel14}"  BorderThickness="0,0,0,1" 
+                                        <TextBox x:Name="LibraryAuthor" Background="{DynamicResource AMSurface}" IsReadOnly="True" TextWrapping="Wrap" BorderThickness="0" Text="{Binding LivelyInfo.Author}"/>
+                                        <TextBox  IsReadOnly="True" Background="{DynamicResource AMSurface}" TextWrapping="WrapWithOverflow" Text="{x:Static p:Resources.txtLabel14}"  BorderThickness="0,0,0,1" 
                                                  Foreground="{DynamicResource AccentColorBrush2}"/>
 
-                                        <TextBlock TextWrapping="WrapWithOverflow" Background="#191D24" Canvas.Left="241" Canvas.Top="98">
+                                        <TextBlock TextWrapping="WrapWithOverflow" Background="{DynamicResource AMSurface}" Canvas.Left="241" Canvas.Top="98">
                                             <Hyperlink x:Name="LibraryContact"  RequestNavigate="Hyperlink_RequestNavigate_Warning" NavigateUri="{Binding UriContact, Converter={StaticResource nullConverter}}" 
                                                        Foreground="{DynamicResource AccentColorBrush}"  ><Run Text="{Binding LivelyInfo.Contact}"/></Hyperlink>
                                         </TextBlock>
@@ -222,23 +222,23 @@
                             </ScrollViewer>
                         </DockPanel>
                     </Border>
-                    <TextBlock Grid.Row="2" Grid.ColumnSpan="2" Margin="4,11,0,0" Foreground="#9EA7B6" FontSize="12" Text="Tip: drag a video, GIF or wallpaper file into this window to import it."/>
+                    <TextBlock Grid.Row="2" Grid.ColumnSpan="2" Margin="4,11,0,0" Foreground="{DynamicResource AMMuted}" FontSize="12" Text="Tip: drag a video, GIF or wallpaper file into this window to import it."/>
                 </Grid>
             </TabItem>
             <TabItem Header="Add wallpaper">
                 <Canvas Margin="-5,0,5,5">
-                    <Label Content="{x:Static p:Resources.txtLabel1}" Canvas.Left="42" Canvas.Top="41" Foreground="#9EA7B6" FontSize="15"/>
-                    <Label Content="{x:Static p:Resources.txtLabel2}" Foreground="#9EA7B6" FontStyle="Italic" Canvas.Left="55" Canvas.Top="382"></Label>
-                    <!--<Label Content="AM Lively Wallpaper - Wallpaper System" Canvas.Left="761" Canvas.Top="482" Foreground="#9EA7B6" FontStyle="Italic"></Label>-->
+                    <Label Content="{x:Static p:Resources.txtLabel1}" Canvas.Left="42" Canvas.Top="41" Foreground="{DynamicResource AMMuted}" FontSize="15"/>
+                    <Label Content="{x:Static p:Resources.txtLabel2}" Foreground="{DynamicResource AMMuted}" FontStyle="Italic" Canvas.Left="55" Canvas.Top="382"></Label>
+                    <!--<Label Content="AM Lively Wallpaper - Wallpaper System" Canvas.Left="761" Canvas.Top="482" Foreground="{DynamicResource AMMuted}" FontStyle="Italic"></Label>-->
                     <StackPanel Canvas.Left="35" Canvas.Top="456">
-                        <Label Content="{x:Static p:Resources.txtLabel3}" Foreground="#9EA7B6" FontStyle="Italic"></Label>
+                        <Label Content="{x:Static p:Resources.txtLabel3}" Foreground="{DynamicResource AMMuted}" FontStyle="Italic"></Label>
                     </StackPanel>
 
-                    <Label Content="{x:Static p:Resources.txtLabel4}" Canvas.Left="55" Canvas.Top="77" Foreground="#9EA7B6"></Label>
-                    <Label Content="{x:Static p:Resources.txtLabel5}" Canvas.Left="310" Canvas.Top="77" Foreground="#9EA7B6"></Label>
-                    <Label Content="{x:Static p:Resources.txtLabel6}" Canvas.Left="565" Canvas.Top="72" Foreground="#9EA7B6"></Label>
-                    <Label Content="{x:Static p:Resources.txtLabel7}" Canvas.Left="705" Canvas.Top="72" Foreground="#9EA7B6"></Label>
-                    <Label Content="{x:Static p:Resources.txtLabel8}" Canvas.Left="55" Canvas.Top="238" Foreground="#9EA7B6"></Label>
+                    <Label Content="{x:Static p:Resources.txtLabel4}" Canvas.Left="55" Canvas.Top="77" Foreground="{DynamicResource AMMuted}"></Label>
+                    <Label Content="{x:Static p:Resources.txtLabel5}" Canvas.Left="310" Canvas.Top="77" Foreground="{DynamicResource AMMuted}"></Label>
+                    <Label Content="{x:Static p:Resources.txtLabel6}" Canvas.Left="565" Canvas.Top="72" Foreground="{DynamicResource AMMuted}"></Label>
+                    <Label Content="{x:Static p:Resources.txtLabel7}" Canvas.Left="705" Canvas.Top="72" Foreground="{DynamicResource AMMuted}"></Label>
+                    <Label Content="{x:Static p:Resources.txtLabel8}" Canvas.Left="55" Canvas.Top="238" Foreground="{DynamicResource AMMuted}"></Label>
                     <Controls:Tile Title="{x:Static p:Resources.txtTileGIF}"  Click="Tile_GIF_Click" ClickMode="Release"  TitleFontSize="12" Width="100"  Height="100" Margin="0" Canvas.Left="55" Canvas.Top="102" >
                         <Image Width="40" Height="40" VerticalAlignment="Top" Margin="0"  Source="/images/icons8-pictureframe-icons-80.png"></Image>
                     </Controls:Tile>
@@ -290,7 +290,7 @@
                         <Image  Width="30" Height="30"  Margin="0"  Source="/images/icons8-stream-48.png"></Image>
                     </Controls:Tile>
 
-                    <Label Content="{x:Static p:Resources.txtLabel9}" Canvas.Left="425" Canvas.Top="238" Foreground="#9EA7B6"></Label>
+                    <Label Content="{x:Static p:Resources.txtLabel9}" Canvas.Left="425" Canvas.Top="238" Foreground="{DynamicResource AMMuted}"></Label>
                     <Controls:Tile TitleFontSize="12" Title="{x:Static p:Resources.txtTileHTML}"  Click="Tile_HTML_AUDIO_Click" ClickMode="Release" 
                     Width="100"
                     Height="100" Margin="0" Canvas.Left="425" Canvas.Top="264" 
@@ -305,7 +305,7 @@
                         <!-- <Image  Width="40" Height="40" Margin="0,0,0,0"  Source="/images/audio-wave1.png"></Image> -->
                     </Controls:Tile>
 
-                    <Label Content="{x:Static p:Resources.txtLabelAppName}" Canvas.Left="705" Canvas.Top="238" Foreground="#9EA7B6"></Label>
+                    <Label Content="{x:Static p:Resources.txtLabelAppName}" Canvas.Left="705" Canvas.Top="238" Foreground="{DynamicResource AMMuted}"></Label>
                     <Controls:Tile TitleFontSize="12" Title="AM Lively Wallpaper .zip" Click="Tile_LIVELY_ZIP_Click" ClickMode="Release"
                     Width="100"
                     Height="100" Margin="0" Canvas.Left="705" Canvas.Top="264" 
@@ -518,35 +518,35 @@
             </TabItem>
             <TabItem Header="Processes"><pm:ProcessManagerView/></TabItem>
             <TabItem Header="About">
-                <Grid Background="#0F1115" Margin="12,15,12,10">
+                <Grid Background="{DynamicResource AMBackground}" Margin="12,15,12,10">
                     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-                    <Border Grid.Row="0" Background="#191D24" BorderBrush="#303742" BorderThickness="1" CornerRadius="16" Padding="22" Margin="0,0,0,14">
+                    <Border Grid.Row="0" Background="{DynamicResource AMSurface}" BorderBrush="{DynamicResource AMBorder}" BorderThickness="1" CornerRadius="16" Padding="22" Margin="0,0,0,14">
                         <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                            <Border Width="76" Height="76" Background="#0F1115" CornerRadius="15" BorderBrush="#303742" BorderThickness="1" Padding="10">
+                            <Border Width="76" Height="76" Background="{DynamicResource AMBackground}" CornerRadius="15" BorderBrush="{DynamicResource AMBorder}" BorderThickness="1" Padding="10">
                                 <Image Source="{StaticResource AMBrandMark}" Stretch="Uniform"/>
                             </Border>
                             <StackPanel Grid.Column="1" Margin="18,1,5,0" VerticalAlignment="Center">
-                                <Label Content="AM Lively Wallpaper" FontSize="26" FontWeight="SemiBold" Foreground="#F5F6F8" Padding="0"/>
-                                <TextBlock Text="Dynamic desktop wallpaper • Performance control" Foreground="#9EA7B6" FontSize="12" Margin="0,6,0,0"/>
-                                <TextBlock Text="Based on Lively Wallpaper v0.9.6.0 by rocksdanister · Microsoft Public License" Foreground="#9EA7B6" FontSize="11" Margin="0,9,0,0"/>
+                                <Label Content="AM Lively Wallpaper" FontSize="26" FontWeight="SemiBold" Foreground="{DynamicResource AMText}" Padding="0"/>
+                                <TextBlock Text="Dynamic desktop wallpaper • Performance control" Foreground="{DynamicResource AMMuted}" FontSize="12" Margin="0,6,0,0"/>
+                                <TextBlock Text="Based on Lively Wallpaper v0.9.6.0 by rocksdanister · Microsoft Public License" Foreground="{DynamicResource AMMuted}" FontSize="11" Margin="0,9,0,0"/>
                             </StackPanel>
                             <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
-                                <TextBlock Name="lblVersionNumber" Text="v0.9.6.1" Foreground="#E5394B" FontSize="17" HorizontalAlignment="Right" PreviewMouseDown="lblVersionNumber_PreviewMouseDown"/>
-                                <Label Name="lblPortableTxt" Content="Portable" Foreground="#9EA7B6" Padding="0" HorizontalContentAlignment="Right" Margin="0,8,0,0"/>
+                                <TextBlock Name="lblVersionNumber" Text="v0.9.6.1" Foreground="{DynamicResource AMAccent}" FontSize="17" HorizontalAlignment="Right" PreviewMouseDown="lblVersionNumber_PreviewMouseDown"/>
+                                <Label Name="lblPortableTxt" Content="Portable" Foreground="{DynamicResource AMMuted}" Padding="0" HorizontalContentAlignment="Right" Margin="0,8,0,0"/>
                             </StackPanel>
                         </Grid>
                     </Border>
-                    <Border Grid.Row="1" Background="#13161B" BorderBrush="#303742" BorderThickness="1" CornerRadius="11" Padding="13" Margin="0,0,0,14">
+                    <Border Grid.Row="1" Background="{DynamicResource AMSidebar}" BorderBrush="{DynamicResource AMBorder}" BorderThickness="1" CornerRadius="11" Padding="13" Margin="0,0,0,14">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Foreground="#9EA7B6" Text="OPEN SOURCE  ·  " FontWeight="Bold"/>
-                            <TextBlock><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://github.com/rocksdanister/lively" Foreground="#E5394B">Original Lively Wallpaper</Hyperlink></TextBlock>
-                            <TextBlock Text="   |   " Foreground="#9EA7B6"/>
-                            <TextBlock><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://github.com/ashraftefa97-beep/AM-Lively-Wallpaper" Foreground="#E5394B">AM source repository</Hyperlink></TextBlock>
+                            <TextBlock Foreground="{DynamicResource AMMuted}" Text="OPEN SOURCE  ·  " FontWeight="Bold"/>
+                            <TextBlock><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://github.com/rocksdanister/lively" Foreground="{DynamicResource AMAccent}">Original Lively Wallpaper</Hyperlink></TextBlock>
+                            <TextBlock Text="   |   " Foreground="{DynamicResource AMMuted}"/>
+                            <TextBlock><Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://github.com/ashraftefa97-beep/AM-Lively-Wallpaper" Foreground="{DynamicResource AMAccent}">AM source repository</Hyperlink></TextBlock>
                         </StackPanel>
                     </Border>
-                    <Border Grid.Row="2" Background="#13161B" BorderBrush="#303742" BorderThickness="1" CornerRadius="13" Padding="14">
+                    <Border Grid.Row="2" Background="{DynamicResource AMSidebar}" BorderBrush="{DynamicResource AMBorder}" BorderThickness="1" CornerRadius="13" Padding="14">
                         <DockPanel LastChildFill="True">
-                            <TextBlock DockPanel.Dock="Top" Text="Licenses &amp; acknowledgements" Foreground="#F5F6F8" FontSize="17" FontWeight="SemiBold" Margin="2,0,0,12"/>
+                            <TextBlock DockPanel.Dock="Top" Text="Licenses &amp; acknowledgements" Foreground="{DynamicResource AMText}" FontSize="17" FontWeight="SemiBold" Margin="2,0,0,12"/>
                             <FlowDocumentScrollViewer Name="licenseFlowDocumentViewer" VerticalScrollBarVisibility="Visible" Foreground="#111111" BorderThickness="0">
                                 <FlowDocument Name="licenseDocument" Hyperlink.RequestNavigate="Hyperlink_RequestNavigate_Warning" Background="#EDF0F5"/>
                             </FlowDocumentScrollViewer>
@@ -561,15 +561,15 @@
             </TabItem>
            
         </Controls:MetroTabControl> 
-        <Border Grid.Row="0" Grid.ColumnSpan="4" Background="#13161B" BorderBrush="#303742" BorderThickness="1" CornerRadius="14" Padding="14,9">
+        <Border Grid.Row="0" Grid.ColumnSpan="4" Background="{DynamicResource AMSidebar}" BorderBrush="{DynamicResource AMBorder}" BorderThickness="1" CornerRadius="14" Padding="14,9">
             <Grid>
                 <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                <Border Width="50" Height="50" CornerRadius="11" Background="#0F1115" BorderBrush="#303742" BorderThickness="1" Padding="6">
+                <Border Width="50" Height="50" CornerRadius="11" Background="{DynamicResource AMBackground}" BorderBrush="{DynamicResource AMBorder}" BorderThickness="1" Padding="6">
                     <Image Source="{StaticResource AMBrandMark}" Stretch="Uniform"/>
                 </Border>
                 <StackPanel Grid.Column="1" Margin="13,3,0,0" VerticalAlignment="Center">
-                    <TextBlock Text="AM LIVELY" FontWeight="Bold" FontSize="19" Foreground="#F5F6F8"/>
-                    <TextBlock Text="WALLPAPER  /  PERFORMANCE" FontWeight="SemiBold" FontSize="10" Foreground="#E5394B" Margin="0,3,0,0"/>
+                    <TextBlock Text="AM LIVELY" FontWeight="Bold" FontSize="19" Foreground="{DynamicResource AMText}"/>
+                    <TextBlock Text="WALLPAPER  /  PERFORMANCE" FontWeight="SemiBold" FontSize="10" Foreground="{DynamicResource AMAccent}" Margin="0,3,0,0"/>
                 </StackPanel>
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button Content="Library" Style="{StaticResource AMNavButton}" Click="OpenLibraryQuick" Margin="0,0,8,0"/>

@@ -51,6 +51,21 @@ namespace livelywpf
             base.OnExit(e);
         }
 
+
+        // UI-only palette. DynamicResource brushes update without touching wallpaper logic.
+        private static void ApplyAmPalette(bool light)
+        {
+            var tokens = light
+                ? new [] { "#F5F7FA", "#EDF1F6", "#FFFFFF", "#B52C47", "#202835", "#536073", "#CBD3DE", "#F8E8EC", "#E6EBF2" }
+                : new [] { "#0F1115", "#13161B", "#191D24", "#E5394B", "#F5F6F8", "#9EA7B6", "#303742", "#32242C", "#242935" };
+            var names = new [] { "AMBackground", "AMSidebar", "AMSurface", "AMAccent", "AMText", "AMMuted", "AMBorder", "AMSelection", "AMHover" };
+            for (int i = 0; i < names.Length; ++i)
+            {
+                Application.Current.Resources[names[i]] =
+                    new SolidColorBrush((Color)ColorConverter.ConvertFromString(tokens[i]));
+            }
+        }
+
         protected override void OnStartup(StartupEventArgs e)
         {
             if (isPortableBuild)
@@ -139,22 +154,17 @@ namespace livelywpf
             // you can then use the current theme and custom accent instead set a new theme
             Tuple<AppTheme, Accent> appStyle = ThemeManager.DetectAppStyle(Application.Current);
 
-            //white theme disabled temp: for v0.8
-            if (SaveData.config.Theme == 9 || SaveData.config.Theme == 10)
+            // Keep all existing theme indices stable. The new BaseLight option is appended.
+            if (SaveData.config.Theme < 0 || SaveData.config.Theme >= SaveData.livelyThemes.Length)
             {
-                SaveData.config.Theme = 0;
+                SaveData.config.Theme = 1;
                 SaveData.SaveConfig();
-                ThemeManager.ChangeAppStyle(Application.Current,
-                                        ThemeManager.GetAccent(SaveData.livelyThemes[SaveData.config.Theme].Accent),
-                                        ThemeManager.GetAppTheme(SaveData.livelyThemes[SaveData.config.Theme].Base)); // or appStyle.Item1
             }
-            else
-            {
-                // setting accent & theme
-                ThemeManager.ChangeAppStyle(Application.Current,
-                                            ThemeManager.GetAccent(SaveData.livelyThemes[SaveData.config.Theme].Accent),
-                                            ThemeManager.GetAppTheme(SaveData.livelyThemes[SaveData.config.Theme].Base)); // or appStyle.Item1
-            }
+            var selectedTheme = SaveData.livelyThemes[SaveData.config.Theme];
+            ThemeManager.ChangeAppStyle(Application.Current,
+                ThemeManager.GetAccent(selectedTheme.Accent),
+                ThemeManager.GetAppTheme(selectedTheme.Base));
+            ApplyAmPalette(String.Equals(selectedTheme.Base, "BaseLight", StringComparison.OrdinalIgnoreCase));
 
             // now change app style to the custom accent and current theme
             //ThemeManager.ChangeAppStyle(Application.Current, ThemeManager.GetAccent("CustomAccent1"), ThemeManager.GetAppTheme(SaveData.livelyThemes[SaveData.config.Theme].Base));

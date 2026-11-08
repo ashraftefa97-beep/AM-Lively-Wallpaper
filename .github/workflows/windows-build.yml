@@ -34,9 +34,23 @@ jobs:
       - name: Download pinned NuGet and Inno Setup
         run: |
           $ErrorActionPreference = 'Stop'
-          Invoke-WebRequest 'https://dist.nuget.org/win-x86-commandline/v5.8.1/nuget.exe' -OutFile "$env:RUNNER_TEMP\nuget.exe" -UseBasicParsing
+          function Invoke-RetryDownload([string]$url, [string]$destination) {
+            for ($attempt = 1; $attempt -le 4; $attempt++) {
+              try {
+                Invoke-WebRequest -Uri $url -OutFile $destination -UseBasicParsing -TimeoutSec 240
+                if (-not (Test-Path $destination) -or (Get-Item $destination).Length -eq 0) { throw 'Download is empty' }
+                return
+              } catch {
+                Remove-Item $destination -Force -ErrorAction SilentlyContinue
+                if ($attempt -eq 4) { throw }
+                Write-Warning "Download attempt $attempt failed: $($_.Exception.Message). Retrying..."
+                Start-Sleep -Seconds (10 * $attempt)
+              }
+            }
+          }
+          Invoke-RetryDownload 'https://dist.nuget.org/win-x86-commandline/v5.8.1/nuget.exe' "$env:RUNNER_TEMP\nuget.exe"
           $inno = "$env:RUNNER_TEMP\innosetup-6.2.2.exe"
-          Invoke-WebRequest 'https://github.com/jrsoftware/issrc/releases/download/is-6_2_2/innosetup-6.2.2.exe' -OutFile $inno -UseBasicParsing
+          Invoke-RetryDownload 'https://github.com/jrsoftware/issrc/releases/download/is-6_2_2/innosetup-6.2.2.exe' $inno
           if ((Get-FileHash $inno -Algorithm SHA256).Hash -ne '8117D10D00A2AD33A1390978EA3872861C330E087914410A6377B22C4C5B8563') { throw 'Inno Setup checksum mismatch' }
           $process = Start-Process $inno -ArgumentList '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP- /DIR=C:\AM-Inno622' -Wait -PassThru
           if ($process.ExitCode -ne 0) { throw "Inno Setup install failed: $($process.ExitCode)" }

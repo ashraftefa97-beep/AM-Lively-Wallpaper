@@ -575,10 +575,12 @@
                     <Button Content="Library" Style="{StaticResource AMNavButton}" Click="OpenLibraryQuick" Margin="0,0,8,0"/>
                     <Button Content="+ Add" Style="{StaticResource AMPrimaryButton}" Click="Button_Click_InstallWallpaper" Margin="0,0,8,0"/>
                     <Button Content="Processes" Style="{StaticResource AMNavButton}" Click="OpenProcessesQuick" Margin="0,0,8,0"/>
-                    <Button Content="Settings" Style="{StaticResource AMNavButton}" Click="OpenSettingsQuick"/>
+                    <Button Content="Settings" Style="{StaticResource AMNavButton}" Click="OpenSettingsQuick" Margin="0,0,8,0"/>
+                    <Image x:Name="image" Width="25" Height="25" Margin="0,0,2,0" Cursor="Hand" ToolTip="Display settings / monitor information"
+                           Source="/images/monitor-50xw.png" MouseLeftButtonUp="Image_Display_MouseLeftButtonUp" VerticalAlignment="Center"/>
                 </StackPanel>
             </Grid>
         </Border>
-        <notification:NotificationMessageContainer Name="notify" Manager="{Binding Manager}" Grid.Row="1" Grid.ColumnSpan="4" Margin="0,4,0,0" IsHitTestVisible="False"/>
+        <notification:NotificationMessageContainer Name="notify" Manager="{Binding Manager}" Grid.Row="1" Grid.ColumnSpan="4" Margin="-15,5,0,0" VerticalAlignment="Top"/>
     </Grid>
 </Controls:MetroWindow>

@@ -3599,5 +3599,10 @@ namespace livelywpf
         }
 
         #endregion 
+    
+        // These shortcuts only navigate existing tabs; all wallpaper operations remain unchanged.
+        private void OpenLibraryQuick(object sender, RoutedEventArgs e) { tabControl1.SelectedIndex = 0; }
+        private void OpenSettingsQuick(object sender, RoutedEventArgs e) { tabControl1.SelectedIndex = 2; }
+        private void OpenProcessesQuick(object sender, RoutedEventArgs e) { tabControl1.SelectedIndex = 3; }
     }
 }

@@ -516,8 +516,8 @@ namespace livelywpf
                                     };
 
         public static readonly SupportedThemes[] livelyThemes = new SupportedThemes[] { 
-                                            new SupportedThemes("DarkLime","Lime","BaseDark"),
-                                            new SupportedThemes("DarkOlive","Olive","BaseDark"),
+                                            new SupportedThemes("BARQ Red","Red","BaseDark"),
+                                            new SupportedThemes("BARQ Red Dark","Red","BaseDark"),
                                             new SupportedThemes("DarkEmerald","Emerald","BaseDark"),
                                             new SupportedThemes("DarkTea","Teal","BaseDark"),
                                             new SupportedThemes("DarkCyan","Cyan","BaseDark"),

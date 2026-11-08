@@ -70,7 +70,7 @@
     </DefineConstants>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>icons8-seed-of-life-96.ico</ApplicationIcon>
+    <ApplicationIcon>brand\AM-Lively.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup />
   <PropertyGroup>
@@ -517,6 +517,7 @@
     <Resource Include="images\icons8-wallpaper-24.png" />
     <Resource Include="images\icons8-seed-of-life-64.png" />
     <Resource Include="icons8-seed-of-life-96.ico" />
+    <Resource Include="brand\AM-Lively.ico" />
     <None Include="docs\help_vid_1.mp4">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

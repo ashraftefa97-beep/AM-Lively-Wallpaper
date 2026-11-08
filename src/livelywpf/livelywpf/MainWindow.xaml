@@ -85,12 +85,42 @@
         </Grid.ColumnDefinitions>
         <Controls:MetroTabControl Name="tabControl1" Grid.Row="1" Grid.ColumnSpan="4" Margin="0,5,0,0" Background="{DynamicResource AMBackground}" Foreground="{DynamicResource AMText}">
             <Controls:MetroTabControl.Resources>
+                <!-- Private header template: wallpaper controls and page content are untouched. -->
                 <Style TargetType="{x:Type TabItem}">
-                    <Setter Property="FontFamily" Value="Segoe UI"/>
-                    <Setter Property="FontSize" Value="15"/>
+                    <Setter Property="FontFamily" Value="Segoe UI, Tahoma"/>
+                    <Setter Property="FontSize" Value="13"/>
                     <Setter Property="FontWeight" Value="SemiBold"/>
-                    <Setter Property="Padding" Value="14,9"/>
-                    <Setter Property="Margin" Value="3,0"/>
+                    <Setter Property="Foreground" Value="{DynamicResource AMMuted}"/>
+                    <Setter Property="Padding" Value="17,10"/>
+                    <Setter Property="Margin" Value="0,0,6,0"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type TabItem}">
+                                <Border x:Name="NavSurface" Margin="{TemplateBinding Margin}" Padding="{TemplateBinding Padding}"
+                                        Background="{DynamicResource AMSidebar}" BorderBrush="{DynamicResource AMBorder}"
+                                        BorderThickness="1" CornerRadius="9">
+                                    <ContentPresenter ContentSource="Header" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="NavSurface" Property="Background" Value="{DynamicResource AMHover}"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource AMText}"/>
+                                    </Trigger>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter TargetName="NavSurface" Property="Background" Value="{DynamicResource AMSelection}"/>
+                                        <Setter TargetName="NavSurface" Property="BorderBrush" Value="{DynamicResource AMAccent}"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource AMText}"/>
+                                    </Trigger>
+                                    <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                        <Setter TargetName="NavSurface" Property="BorderBrush" Value="{DynamicResource AMAccent}"/>
+                                    </Trigger>
+                                    <Trigger Property="IsEnabled" Value="False">
+                                        <Setter TargetName="NavSurface" Property="Opacity" Value="0.45"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
                 </Style>
             </Controls:MetroTabControl.Resources>
             <TabItem Name="libTab" Header="Library">
@@ -233,149 +263,135 @@
                 </Grid>
             </TabItem>
             <TabItem Header="Add wallpaper">
-                <Canvas Margin="-5,0,5,5">
-                    <Label Content="{x:Static p:Resources.txtLabel1}" Canvas.Left="42" Canvas.Top="41" Foreground="{DynamicResource AMMuted}" FontSize="15"/>
-                    <Label Content="{x:Static p:Resources.txtLabel2}" Foreground="{DynamicResource AMMuted}" FontStyle="Italic" Canvas.Left="55" Canvas.Top="382"></Label>
-                    <!--<Label Content="AM Lively Wallpaper - Wallpaper System" Canvas.Left="761" Canvas.Top="482" Foreground="{DynamicResource AMMuted}" FontStyle="Italic"></Label>-->
-                    <StackPanel Canvas.Left="35" Canvas.Top="456">
-                        <Label Content="{x:Static p:Resources.txtLabel3}" Foreground="{DynamicResource AMMuted}" FontStyle="Italic"></Label>
-                    </StackPanel>
-
-                    <Label Content="{x:Static p:Resources.txtLabel4}" Canvas.Left="55" Canvas.Top="77" Foreground="{DynamicResource AMMuted}"></Label>
-                    <Label Content="{x:Static p:Resources.txtLabel5}" Canvas.Left="310" Canvas.Top="77" Foreground="{DynamicResource AMMuted}"></Label>
-                    <Label Content="{x:Static p:Resources.txtLabel6}" Canvas.Left="565" Canvas.Top="72" Foreground="{DynamicResource AMMuted}"></Label>
-                    <Label Content="{x:Static p:Resources.txtLabel7}" Canvas.Left="705" Canvas.Top="72" Foreground="{DynamicResource AMMuted}"></Label>
-                    <Label Content="{x:Static p:Resources.txtLabel8}" Canvas.Left="55" Canvas.Top="238" Foreground="{DynamicResource AMMuted}"></Label>
-                    <Controls:Tile Title="{x:Static p:Resources.txtTileGIF}"  Click="Tile_GIF_Click" ClickMode="Release"  TitleFontSize="12" Width="100"  Height="100" Margin="0" Canvas.Left="55" Canvas.Top="102" >
-                        <Image Width="40" Height="40" VerticalAlignment="Top" Margin="0"  Source="/images/icons8-pictureframe-icons-80.png"></Image>
-                    </Controls:Tile>
-                    <!-- comment -->
-                    <Controls:Tile Title="{x:Static p:Resources.txtTileVideo}" TitleFontSize="12" Click="Tile_Video_Click" ClickMode="Release"
-                    Width="100"
-                    Height="100" Margin="0" Canvas.Left="170" Canvas.Top="102" >
-                        <Image  Width="30" Height="30" Margin="0" Source="/images/icons8-video-50.png"></Image>
-                    </Controls:Tile>
-                    <Controls:Tile TitleFontSize="12" Title="{x:Static p:Resources.txtTileUnity}" Click="Tile_Unity_Click" ClickMode="Release"
-                    Width="100"
-                    Height="100" Margin="0" Canvas.Left="310" Canvas.Top="102" >
-                        <!-- <Image  Width="40" Height="40" Margin="0"  Source="/images/icons8-orthogonal-view-50.png"></Image> -->
-                    </Controls:Tile>
-                    <Controls:Tile  TitleFontSize="12" Title="{x:Static p:Resources.txtTileGodot}" Click="Tile_Godot_Click" ClickMode="Release"
-                    Width="100"
-                    Height="100" Margin="0" Canvas.Left="425" Canvas.Top="102" >
-                        <!-- <Image  Width="40" Height="40" Margin="0"  Source="/images/icons8-bot-50.png"></Image> -->
-                    </Controls:Tile>
-                    <Controls:Tile TitleFontSize="12" Title="BizHawk" Click="Tile_BizHawk_Click" ClickMode="Release"
-                    Width="100"
-                    Height="100" Margin="0" Canvas.Left="565" Canvas.Top="102" 
-                    >
-                        <Image  Width="30" Height="30"  Margin="0"  Source="/images/emulator.png"></Image>
-                    </Controls:Tile>
-                    <Controls:Tile TitleFontSize="12" Title="{x:Static p:Resources.txtTileOther}" Click="Tile_Other_Click" ClickMode="Release"
-                    Width="100"
-                    Height="100" Margin="0" Canvas.Left="705" Canvas.Top="102" 
-                    >
-                        <Image  Width="30" Height="30" Margin="0"  Source="/images/icons8-window-other-50.png"></Image>
-                    </Controls:Tile>
-
-                    <Controls:Tile  TitleFontSize="12" Title="{x:Static p:Resources.txtTileHTML}"  Click="Tile_HTML_Click" ClickMode="Release" 
-                    Width="100"
-                    Height="100" Margin="0" Canvas.Left="55" Canvas.Top="264" 
-                    >
-                        <Image  Width="30" Height="30" Margin="0"  Source="/images/icon html.png"></Image>
-                    </Controls:Tile>
-                    <Controls:Tile TitleFontSize="12" Title="{x:Static p:Resources.txtTileWebsite}"  Click="Tile_URL_Click" ClickMode="Release" 
-                    Width="100"
-                    Height="100" Margin="0" Canvas.Left="170" Canvas.Top="264" 
-                    >
-                        <Image  Width="30" Height="30"  Margin="0"  Source="/images/icons8-webpage-50.png"></Image>
-                    </Controls:Tile>
-                    <Controls:Tile TitleFontSize="12" Title="Stream"  Click="Tile_Video_stream_Click" ClickMode="Release" 
-                    Width="100"
-                    Height="100" Margin="0" Canvas.Left="287" Canvas.Top="264" 
-                    >
-                        <Image  Width="30" Height="30"  Margin="0"  Source="/images/icons8-stream-48.png"></Image>
-                    </Controls:Tile>
-
-                    <Label Content="{x:Static p:Resources.txtLabel9}" Canvas.Left="425" Canvas.Top="238" Foreground="{DynamicResource AMMuted}"></Label>
-                    <Controls:Tile TitleFontSize="12" Title="{x:Static p:Resources.txtTileHTML}"  Click="Tile_HTML_AUDIO_Click" ClickMode="Release" 
-                    Width="100"
-                    Height="100" Margin="0" Canvas.Left="425" Canvas.Top="264" 
-                    >
-                        <Image  Width="30" Height="30"  Margin="0,0,0,0"  Source="/images/audio-wave1.png"></Image>
-                    </Controls:Tile>
-
-                    <Controls:Tile TitleFontSize="12" Title="{x:Static p:Resources.txtTileUnity}" Click="Tile_UNITY_AUDIO_Click" ClickMode="Release" 
-                    Width="100"
-                    Height="100" Margin="0" Canvas.Left="544" Canvas.Top="264" 
-                    >
-                        <!-- <Image  Width="40" Height="40" Margin="0,0,0,0"  Source="/images/audio-wave1.png"></Image> -->
-                    </Controls:Tile>
-
-                    <Label Content="{x:Static p:Resources.txtLabelAppName}" Canvas.Left="705" Canvas.Top="238" Foreground="{DynamicResource AMMuted}"></Label>
-                    <Controls:Tile TitleFontSize="12" Title="AM Lively Wallpaper .zip" Click="Tile_LIVELY_ZIP_Click" ClickMode="Release"
-                    Width="100"
-                    Height="100" Margin="0" Canvas.Left="705" Canvas.Top="264" 
-                    >
-                        <Image  Width="30" Height="30" Margin="0,0,0,0"  Source="/images/icons8-seed-of-life-64.png"></Image>
-                    </Controls:Tile>
-                </Canvas>
+              <Grid Background="{DynamicResource AMBackground}" Margin="4,12,4,0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                  <StackPanel Margin="8,4,14,20">
+                    <TextBlock Text="Add a new wallpaper" FontSize="24" FontWeight="SemiBold" Foreground="{DynamicResource AMText}" />
+                    <TextBlock Text="Choose a format to import or configure. All existing playback options remain available."
+                               FontSize="13" TextWrapping="Wrap" Foreground="{DynamicResource AMMuted}" Margin="0,7,0,23"/>
+                    <Border Background="{DynamicResource AMSidebar}" BorderBrush="{DynamicResource AMBorder}"
+                BorderThickness="1" CornerRadius="12" Padding="20" Margin="0,0,0,16">
+                  <StackPanel>
+                    <TextBlock Text="Media" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource AMText}"/>
+                    <TextBlock Text="Use video files or animated images." FontSize="12" Foreground="{DynamicResource AMMuted}" Margin="0,4,0,15"/>
+                    <WrapPanel Orientation="Horizontal">
+                    <Controls:Tile Title="{x:Static p:Resources.txtTileGIF}" Click="Tile_GIF_Click" ClickMode="Release" Style="{StaticResource AMWallpaperTile}"
+                              AutomationProperties.Name="GIF">
+                            <Path Width="32" Height="32" Stretch="Uniform" Data="M4,5 L28,5 28,25 4,25 Z M4,10 L28,10 M10,19 L15,14 19,18 22,15 26,19"
+                                  Stroke="{DynamicResource AMAccent}" StrokeThickness="2" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent"/>
+                        </Controls:Tile>
+                    <Controls:Tile Title="{x:Static p:Resources.txtTileVideo}" Click="Tile_Video_Click" ClickMode="Release" Style="{StaticResource AMWallpaperTile}"
+                              AutomationProperties.Name="Video">
+                            <Path Width="32" Height="32" Stretch="Uniform" Data="M4,6 L25,6 25,26 4,26 Z M12,11 L20,16 12,21 Z M4,10 L25,10"
+                                  Stroke="{DynamicResource AMAccent}" StrokeThickness="2" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent"/>
+                        </Controls:Tile>
+                    </WrapPanel>
+                  </StackPanel>
+                </Border>
+                    <Border Background="{DynamicResource AMSidebar}" BorderBrush="{DynamicResource AMBorder}"
+                BorderThickness="1" CornerRadius="12" Padding="20" Margin="0,0,0,16">
+                  <StackPanel>
+                    <TextBlock Text="Interactive & games" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource AMText}"/>
+                    <TextBlock Text="Add Unity, Godot, BizHawk or another supported application." FontSize="12" Foreground="{DynamicResource AMMuted}" Margin="0,4,0,15"/>
+                    <WrapPanel Orientation="Horizontal">
+                    <Controls:Tile Title="{x:Static p:Resources.txtTileUnity}" Click="Tile_Unity_Click" ClickMode="Release" Style="{StaticResource AMWallpaperTile}"
+                              AutomationProperties.Name="Unity">
+                            <Path Width="32" Height="32" Stretch="Uniform" Data="M4,10 L16,3 28,10 28,23 16,30 4,23 Z M4,10 L16,17 28,10 M16,17 L16,30"
+                                  Stroke="{DynamicResource AMAccent}" StrokeThickness="2" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent"/>
+                        </Controls:Tile>
+                    <Controls:Tile Title="{x:Static p:Resources.txtTileGodot}" Click="Tile_Godot_Click" ClickMode="Release" Style="{StaticResource AMWallpaperTile}"
+                              AutomationProperties.Name="Godot">
+                            <Path Width="32" Height="32" Stretch="Uniform" Data="M6,13 L6,25 26,25 26,13 22,9 18,11 16,6 13,11 9,9 Z M11,17 L11,19 M21,17 L21,19 M12,22 L20,22"
+                                  Stroke="{DynamicResource AMAccent}" StrokeThickness="2" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent"/>
+                        </Controls:Tile>
+                    <Controls:Tile Title="BizHawk" Click="Tile_BizHawk_Click" ClickMode="Release" Style="{StaticResource AMWallpaperTile}"
+                              AutomationProperties.Name="BizHawk">
+                            <Path Width="32" Height="32" Stretch="Uniform" Data="M8,13 L24,13 28,18 28,24 24,27 20,23 12,23 8,27 4,24 4,18 Z M12,16 L12,21 M10,18.5 L14,18.5 M22,18 L22,19"
+                                  Stroke="{DynamicResource AMAccent}" StrokeThickness="2" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent"/>
+                        </Controls:Tile>
+                    <Controls:Tile Title="{x:Static p:Resources.txtTileOther}" Click="Tile_Other_Click" ClickMode="Release" Style="{StaticResource AMWallpaperTile}"
+                              AutomationProperties.Name="Other">
+                            <Path Width="32" Height="32" Stretch="Uniform" Data="M5,5 L27,5 27,27 5,27 Z M5,11 L27,11 M9,8 L11,8 M15,8 L17,8"
+                                  Stroke="{DynamicResource AMAccent}" StrokeThickness="2" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent"/>
+                        </Controls:Tile>
+                    </WrapPanel>
+                  </StackPanel>
+                </Border>
+                    <Border Background="{DynamicResource AMSidebar}" BorderBrush="{DynamicResource AMBorder}"
+                BorderThickness="1" CornerRadius="12" Padding="20" Margin="0,0,0,16">
+                  <StackPanel>
+                    <TextBlock Text="Web" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource AMText}"/>
+                    <TextBlock Text="Use HTML, a web page or an online video stream." FontSize="12" Foreground="{DynamicResource AMMuted}" Margin="0,4,0,15"/>
+                    <WrapPanel Orientation="Horizontal">
+                    <Controls:Tile Title="{x:Static p:Resources.txtTileHTML}" Click="Tile_HTML_Click" ClickMode="Release" Style="{StaticResource AMWallpaperTile}"
+                              AutomationProperties.Name="HTML">
+                            <Path Width="32" Height="32" Stretch="Uniform" Data="M13,9 L6,16 13,23 M19,9 L26,16 19,23 M17,7 L14,25"
+                                  Stroke="{DynamicResource AMAccent}" StrokeThickness="2" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent"/>
+                        </Controls:Tile>
+                    <Controls:Tile Title="{x:Static p:Resources.txtTileWebsite}" Click="Tile_URL_Click" ClickMode="Release" Style="{StaticResource AMWallpaperTile}"
+                              AutomationProperties.Name="URL">
+                            <Path Width="32" Height="32" Stretch="Uniform" Data="M8,5 L24,5 28,9 28,25 24,28 8,28 4,24 4,9 Z M4,12 L28,12 M9,8 L11,8 M14,8 L16,8 M10,19 L22,19"
+                                  Stroke="{DynamicResource AMAccent}" StrokeThickness="2" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent"/>
+                        </Controls:Tile>
+                    <Controls:Tile Title="Stream" Click="Tile_Video_stream_Click" ClickMode="Release" Style="{StaticResource AMWallpaperTile}"
+                              AutomationProperties.Name="Video stream">
+                            <Path Width="32" Height="32" Stretch="Uniform" Data="M4,7 L28,7 28,25 4,25 Z M12,13 L21,17 12,21 Z M8,29 L24,29"
+                                  Stroke="{DynamicResource AMAccent}" StrokeThickness="2" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent"/>
+                        </Controls:Tile>
+                    </WrapPanel>
+                  </StackPanel>
+                </Border>
+                    <Border Background="{DynamicResource AMSidebar}" BorderBrush="{DynamicResource AMBorder}"
+                BorderThickness="1" CornerRadius="12" Padding="20" Margin="0,0,0,16">
+                  <StackPanel>
+                    <TextBlock Text="Audio visualizers" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource AMText}"/>
+                    <TextBlock Text="Create animated wallpaper from sound sources." FontSize="12" Foreground="{DynamicResource AMMuted}" Margin="0,4,0,15"/>
+                    <WrapPanel Orientation="Horizontal">
+                    <Controls:Tile Title="HTML Audio" Click="Tile_HTML_AUDIO_Click" ClickMode="Release" Style="{StaticResource AMWallpaperTile}"
+                              AutomationProperties.Name="HTML AUDIO">
+                            <Path Width="32" Height="32" Stretch="Uniform" Data="M5,13 L5,20 M10,7 L10,25 M15,12 L15,20 M20,4 L20,28 M25,11 L25,22"
+                                  Stroke="{DynamicResource AMAccent}" StrokeThickness="2" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent"/>
+                        </Controls:Tile>
+                    <Controls:Tile Title="Unity Audio" Click="Tile_UNITY_AUDIO_Click" ClickMode="Release" Style="{StaticResource AMWallpaperTile}"
+                              AutomationProperties.Name="UNITY AUDIO">
+                            <Path Width="32" Height="32" Stretch="Uniform" Data="M5,10 L16,4 27,10 27,22 16,28 5,22 Z M8,17 L12,17 M16,12 L16,22 M20,15 L20,19 M24,14 L24,20"
+                                  Stroke="{DynamicResource AMAccent}" StrokeThickness="2" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent"/>
+                        </Controls:Tile>
+                    </WrapPanel>
+                  </StackPanel>
+                </Border>
+                    <Border Background="{DynamicResource AMSidebar}" BorderBrush="{DynamicResource AMBorder}"
+                BorderThickness="1" CornerRadius="12" Padding="20" Margin="0,0,0,16">
+                  <StackPanel>
+                    <TextBlock Text="Wallpaper packages" FontSize="16" FontWeight="SemiBold" Foreground="{DynamicResource AMText}"/>
+                    <TextBlock Text="Import an existing Lively wallpaper archive." FontSize="12" Foreground="{DynamicResource AMMuted}" Margin="0,4,0,15"/>
+                    <WrapPanel Orientation="Horizontal">
+                    <Controls:Tile Title="Wallpaper .zip" Click="Tile_LIVELY_ZIP_Click" ClickMode="Release" Style="{StaticResource AMWallpaperTile}"
+                              AutomationProperties.Name="LIVELY ZIP">
+                            <Path Width="32" Height="32" Stretch="Uniform" Data="M8,4 L19,4 25,10 25,28 8,28 Z M19,4 L19,10 25,10 M13,10 L13,18 M13,21 L13,24 M16,21 L16,24"
+                                  Stroke="{DynamicResource AMAccent}" StrokeThickness="2" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Fill="Transparent"/>
+                        </Controls:Tile>
+                    </WrapPanel>
+                  </StackPanel>
+                </Border>
+                    <TextBlock Text="You can also drag files directly into the window."
+                               Foreground="{DynamicResource AMMuted}" FontStyle="Italic" Margin="2,8,0,14"/>
+                  </StackPanel>
+                </ScrollViewer>
+              </Grid>
             </TabItem>
             <TabItem Header="{x:Static p:Resources.titleSettings}" >
                 <Grid Background="{DynamicResource AMBackground}" Margin="4,8,4,0">
                     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" CanContentScroll="True" >
-                        <WrapPanel Orientation="Horizontal" ItemWidth="290" Margin="0,0,6,12">
-                            <!-- Height="510" -->
-
-                            <StackPanel Orientation="Vertical" Margin="12,8,12,16" Width="266">
-                                <Label Content="{x:Static p:Resources.txtLabel15}"  Style="{StaticResource AMSettingsHeading}" />
-                                <Controls:ToggleSwitch Name="transparencyToggle" Style="{StaticResource AMSettingsToggle}" Header="{x:Static p:Resources.txtTransparency}" ToolTip="{x:Static p:Resources.txtTransparencyToolTip}"></Controls:ToggleSwitch>
-                                <Slider x:Name="transparencySlider" Style="{StaticResource AMSettingsSlider}" Minimum="0.5" Maximum="0.9" IsEnabled="False" IsMoveToPointEnabled="True" ></Slider>
-                                <Controls:ToggleSwitch Name="StartupToggle" Style="{StaticResource AMSettingsToggle}" Header="{x:Static p:Resources.txtStartup}" ToolTip="{x:Static p:Resources.txtStartupToolTip}"  ></Controls:ToggleSwitch>
-                                <Controls:ToggleSwitch Name="TileAnimateToggle" Style="{StaticResource AMSettingsToggle}" Header="{x:Static p:Resources.txtLiveTile}" ToolTip="{x:Static p:Resources.txtLiveTileToolTip}"></Controls:ToggleSwitch>
-                                <!--<Label Content="Display" Style="{StaticResource AMSettingsHeading}"/>-->
-                                <Button ClickMode="Release" Click="Display_layout_Btn" >
-                                    <StackPanel Orientation="Horizontal">
-                                        <Image Source="/images/monitor-50xw.png" Width="20" Height="20"/>
-                                        <TextBlock Text="Display Layout" VerticalAlignment="Center" />
-                                    </StackPanel>
-                                </Button>
-                                <Controls:ToggleSwitch IsEnabled="False" Visibility="Collapsed" Name="TileGenerateToggle" Header="Generate Tile:" ToolTip="Generate tiles automatically for all files, coming soon."></Controls:ToggleSwitch>
-                                <Label Content="{x:Static p:Resources.txtLabel16}" Style="{StaticResource AMSettingsHeading}"/>
-
-                                <!--<Label Content="UI: " FontSize="14.667" />-->
-                                <WrapPanel Height="35">
-                                    <Image Source="/images/icons8-language-50.png" Margin="2,0,0,0" Width="25" Height="25" />
-                                    <TextBlock  Text="Language:" FontSize="14" VerticalAlignment="Center"  >
-                                    </TextBlock>
-                                </WrapPanel>
-                                <ComboBox Name="comboBoxLanguage" Style="{StaticResource AMInputList}">
-                                    <!--
-                                <ComboBoxItem IsSelected="True">English (en)</ComboBoxItem>
-                                <ComboBoxItem >中文</ComboBoxItem>
-                                -->
-                                </ComboBox>
-                                <!--
-                            <Controls:ToggleSwitch Name="fpsUIToggle" Style="{StaticResource AMSettingsToggle}" Header="Force Fast UI:"  >
-                            </Controls:ToggleSwitch>
-                            <Controls:ToggleSwitch Name="disableUIHWToggle" Style="{StaticResource AMSettingsToggle}" Header="Force Software Rendering:"></Controls:ToggleSwitch>
-                            -->
-                                <!--<Controls:ToggleSwitch IsEnabled="False" Name="bottomMostWPBtn" Header="High Contrast Workaround:" ToolTip="Render Wallpaper infront of icons"></Controls:ToggleSwitch>-->
-                                <TextBlock  Text="Theme:" FontSize="14" VerticalAlignment="Center" Padding="0,10,0,0" />
-                                <ComboBox Name="comboBoxTheme" Style="{StaticResource AMInputList}">
-                                </ComboBox>
-                                <TextBlock Text="Animations" Foreground="{DynamicResource AMText}" FontWeight="SemiBold" Margin="0,14,0,4"/>
-                                <ComboBox x:Name="comboBoxAnimations" Style="{StaticResource AMInputList}" ToolTip="Controls optional interface transitions; wallpaper playback and process control are unchanged.">
-                                    <ComboBoxItem Content="Full"/>
-                                    <ComboBoxItem Content="Reduced"/>
-                                    <ComboBoxItem Content="Off"/>
-                                </ComboBox>
-                                <TextBlock Foreground="{DynamicResource AMMuted}" TextWrapping="Wrap"
-                                           Text="Reduce motion for older PCs. UI transitions stop while the window is hidden or minimized."/>
-
-                            </StackPanel>
-
-                            <StackPanel Orientation="Vertical" Margin="12,8,12,16" Canvas.Left="203"  Width="266">
+                        <Grid Margin="8,5,0,16">
+                           <Grid.ColumnDefinitions>
+                              <ColumnDefinition Width="*"/>
+                              <ColumnDefinition Width="*"/>
+                           </Grid.ColumnDefinitions>
+                           <Grid.RowDefinitions><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                           <Border Grid.Column="0" Grid.Row="0" Margin="0,0,16,16"
+                   Padding="20,18" Background="{DynamicResource AMSidebar}" BorderBrush="{DynamicResource AMBorder}"
+                   BorderThickness="1" CornerRadius="12"><StackPanel Margin="0" VerticalAlignment="Top">
 
                                 <Label Content="{x:Static p:Resources.txtLabel17}" Style="{StaticResource AMSettingsHeading}"/>
 
@@ -410,113 +426,8 @@
                                 <Controls:ToggleSwitch Name="cefAudioInMuteToggle" Style="{StaticResource AMSettingsToggle}" Header="{x:Static p:Resources.txtAudioIn}" ToolTip="{x:Static p:Resources.txtAudioInToolTip}"></Controls:ToggleSwitch>
                                 <TextBlock Name="web_audio_WarningText" TextWrapping="Wrap" Foreground="IndianRed" Text="{x:Static p:Resources.txtAudioLabel2}"/>
                                 
-                            </StackPanel>
-
-                            <StackPanel Orientation="Vertical" Margin="12,8,12,16" Canvas.Left="203"  Width="266">
-                                <Label Content="{x:Static p:Resources.txtLabel20}" Style="{StaticResource AMSettingsHeading}"/>
-
-                                <Label Content="{x:Static p:Resources.txtWallpaperPlayback}" BorderBrush="#FF7C7D7D" BorderThickness="0,0,0,1" FontSize="14.667" />
-                                <Label Content="{x:Static p:Resources.txtOtherAppsFullScreen}" FontSize="12.667" />
-                                <ComboBox Name="comboBoxFullscreenPerf" Style="{StaticResource AMInputList}" >
-                                    <ComboBoxItem IsSelected="True"  Content="{x:Static p:Resources.cmbBoxPause}"></ComboBoxItem>
-                                    <ComboBoxItem Background="IndianRed" Content="{x:Static p:Resources.cmbBoxNothing}" ></ComboBoxItem>
-                                    <ComboBoxItem IsEnabled="False" Content="{x:Static p:Resources.cmbBoxKill}"></ComboBoxItem>
-                                </ComboBox>
-                                <Label Content="{x:Static p:Resources.txtOtherAppsFocus}" FontSize="12.667" />
-                                <ComboBox Name="comboBoxFocusedPerf" Style="{StaticResource AMInputList}" >
-                                    <ComboBoxItem  Content="{x:Static p:Resources.cmbBoxPause}"></ComboBoxItem>
-                                    <ComboBoxItem IsSelected="True"  Content="{x:Static p:Resources.cmbBoxNothing}"></ComboBoxItem>
-                                    <ComboBoxItem IsEnabled="False"  Content="{x:Static p:Resources.cmbBoxKill}"></ComboBoxItem>
-                                </ComboBox>
-                                <Label Content="{x:Static p:Resources.txtWhenBattery}" FontSize="12.667" />
-                                <ComboBox Name="comboBoxBatteryPerf" Style="{StaticResource AMInputList}" >
-                                    <ComboBoxItem Content="{x:Static p:Resources.cmbBoxPause}"></ComboBoxItem>
-                                    <ComboBoxItem IsSelected="True"  Content="{x:Static p:Resources.cmbBoxNothing}"></ComboBoxItem>
-                                    <ComboBoxItem IsEnabled="False"  Content="{x:Static p:Resources.cmbBoxKill}"></ComboBoxItem>
-                                </ComboBox>
-                                <Label  Content="{x:Static p:Resources.txtDisplayPauseRule}" FontSize="14.667" />
-                                <ComboBox Name="comboBoxMonitorPauseRule" Style="{StaticResource AMInputList}" >
-                                    <ComboBoxItem IsSelected="True" Content="{x:Static p:Resources.cmbBoxPerDisplay}"></ComboBoxItem>
-                                    <ComboBoxItem Content="{x:Static p:Resources.cmbBoxAllDisplays}" ></ComboBoxItem>
-                                </ComboBox>
-                                <Label  Content="{x:Static p:Resources.txtPauseAlgorith}" FontSize="14.667" />
-                                <ComboBox Name="comboBoxPauseAlgorithm" Style="{StaticResource AMInputList}" >
-                                    <ComboBoxItem IsSelected="True" Content="{x:Static p:Resources.cmbBoxPauseAlgorithmForeground}"></ComboBoxItem>
-                                    <ComboBoxItem  Background="IndianRed" Content="{x:Static p:Resources.cmbBoxPaugeAlgorithmAllProcess}"></ComboBoxItem>
-                                </ComboBox>
-                                <Button Margin="0,7,0,0" Content="{x:Static p:Resources.txtApplicationRules}" ClickMode="Release" Click="Button_AppRule_Click"></Button>
-                                <!--<TextBlock TextWrapping="WrapWithOverflow" Foreground="Olive" FontSize="11" Height="190" Margin="0,0,-0.2,0">Note:<LineBreak/>(1) Lively window ignores these rules.<LineBreak/>(2) Audio is always muted when other apps are in focus {except {1}, Lively window}.<LineBreak/>
-                                (3) Foreground Process algorithm has some limitations, check wiki for more information.<LineBreak/>(4) Application Rules has the highest priority.
-                                <LineBreak/>(5) Web browser is being minimized instead of pausing, so you will see wallpaper temporarily reverting to default in some cases; fix is coming soon.</TextBlock>-->
-                                                                
-                                <Label Content="Audio" Style="{StaticResource AMSettingsHeading}"/>
-                                <Controls:ToggleSwitch Name="audioFocusedToggle" Style="{StaticResource AMSettingsToggle}" Header="{x:Static p:Resources.txtOtherAppsFocus}" ></Controls:ToggleSwitch>
-                                <ScrollViewer Height="180" Visibility="Collapsed" >
-                                    <TextBlock TextWrapping="WrapWithOverflow" Foreground="{DynamicResource AccentColorBrush2}" Text="{x:Static p:Resources.txtNotes}"  />
-                                </ScrollViewer>
-
-                            </StackPanel>
-
-                            <StackPanel Orientation="Vertical" Margin="12,8,12,16" Width="266">
-                                <!--
-                                <Label Content="Audio:" Style="{StaticResource AMSettingsHeading}"/>
-                                <Controls:ToggleSwitch Name="audioFocusedToggle" Style="{StaticResource AMSettingsToggle}" Header="{x:Static p:Resources.txtOtherAppsFocus}" ></Controls:ToggleSwitch>
--->
-                                <Label Content="{x:Static p:Resources.txtLabelStream}" Style="{StaticResource AMSettingsHeading}"/>
-                                <Label Content="{x:Static p:Resources.txtLabelVideoQuality}" FontSize="14.667" />
-                                <ComboBox Name="cmbBoxStreamQuality" Style="{StaticResource AMInputList}" >
-                                    <ComboBoxItem Content="Best"></ComboBoxItem>
-                                    <ComboBoxItem Content="2160p"></ComboBoxItem>
-                                    <ComboBoxItem Content="1440p"></ComboBoxItem>
-                                    <ComboBoxItem IsSelected="True" Content="1080p"></ComboBoxItem>
-                                    <ComboBoxItem Content="720p"></ComboBoxItem>
-                                    <ComboBoxItem Content="480p"></ComboBoxItem>
-                                </ComboBox>
-
-                                <Label Content="Video Codec:" FontSize="14.667" />
-                                <ComboBox IsEnabled="False" >
-                                    <ComboBoxItem Content="VP9" IsSelected="True"></ComboBoxItem>
-                                    <ComboBoxItem Content="x264"></ComboBoxItem>
-                                </ComboBox>
-                                
-                                <Label Content="{x:Static p:Resources.txtLabel18}" Style="{StaticResource AMSettingsHeading}"/>
-                                <Label Content="{x:Static p:Resources.txtGifScaling}" FontSize="14.667" />
-                                <ComboBox Name="comboBoxGIFPlayerScaling" Style="{StaticResource AMInputList}">
-                                    <ComboBoxItem IsSelected="True"  Content="None"></ComboBoxItem>
-                                    <ComboBoxItem Content="Fill" ></ComboBoxItem>
-                                    <ComboBoxItem Content="Uniform"></ComboBoxItem>
-                                    <ComboBoxItem  Content="Uniform Fill"></ComboBoxItem>
-                                </ComboBox>
-
-                                <Label Content="{x:Static p:Resources.txtGIFPlayer}" ToolTip="{x:Static p:Resources.txtGifPlayerToolTip}" FontSize="14.667" />
-                                <ComboBox Name="comboBoxGIFPlayer" Style="{StaticResource AMInputList}">
-                                    <ComboBoxItem IsSelected="True" ToolTip="{x:Static p:Resources.cmbBoxGIFPlayer1ToolTip}" Content="{x:Static p:Resources.cmbBoxGIFPlayer1}" ></ComboBoxItem>
-                                    <ComboBoxItem ToolTip="{x:Static p:Resources.cmbBoxGIFPlayer2ToolTip}" Content="{x:Static p:Resources.cmbBoxGIFPlayer2}"></ComboBoxItem>
-                                </ComboBox>
-                                <TextBlock Canvas.Left="241" Canvas.Top="98">
-                                <Hyperlink RequestNavigate="Hyperlink_RequestNavigate" NavigateUri="https://github.com/rocksdanister/lively/wiki/GIF-Guide" 
-                                           Foreground="{DynamicResource AccentColorBrush2}"><TextBlock Text="{x:Static p:Resources.txtLabel11}" /></Hyperlink>
-                                </TextBlock>
-
-                                <Label Content="{x:Static p:Resources.txtLivelyWallpaperTypeApp}" Style="{StaticResource AMSettingsHeading}"/>
-                                <Controls:ToggleSwitch Name="appMuteToggle" Style="{StaticResource AMSettingsToggle}" Header="{x:Static p:Resources.txtAudioOut}" ></Controls:ToggleSwitch>
-                            </StackPanel>
-
-                            <StackPanel Orientation="Vertical" Margin="12,8,12,16" Width="266">
-                                <Label Content="Interaction" Style="{StaticResource AMSettingsHeading}"/>
-                                <ComboBox Name="comboBoxWpInputSettings" Style="{StaticResource AMInputList}">
-                                    <ComboBoxItem Content="{x:Static p:Resources.txtOff}" />
-                                    <ComboBoxItem IsSelected="True" Content="{x:Static p:Resources.txtMouse}"/>
-                                    <ComboBoxItem IsEnabled="False" Content="Mouse + KB"/>
-                                </ComboBox>
-                                <Label Content="{x:Static p:Resources.txtOtherAppsFocus}" FontSize="14.667" />
-                                <CheckBox Name="chkboxMouseOtherAppsFocus" Margin="2.5,2.5,0,0" Content="{x:Static p:Resources.txtMouse}"/>
-                            </StackPanel>
-
-                            <StackPanel Orientation="Vertical" Margin="12,8,12,16" Width="266">
-                                
-                            </StackPanel>
-                        </WrapPanel>
+                            </StackPanel></Border>
+                         </Grid>
                     </ScrollViewer>
                 </Grid>
             </TabItem>
@@ -576,12 +487,10 @@
                     <TextBlock Text="WALLPAPER  /  PERFORMANCE" FontWeight="SemiBold" FontSize="10" Foreground="{DynamicResource AMAccent}" Margin="0,3,0,0"/>
                 </StackPanel>
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Content="Library" Style="{StaticResource AMNavButton}" Click="OpenLibraryQuick" Margin="0,0,8,0"/>
-                    <Button Content="+ Add" Style="{StaticResource AMPrimaryButton}" Click="Button_Click_InstallWallpaper" Margin="0,0,8,0"/>
-                    <Button Content="Processes" Style="{StaticResource AMNavButton}" Click="OpenProcessesQuick" Margin="0,0,8,0"/>
-                    <Button Content="Settings" Style="{StaticResource AMNavButton}" Click="OpenSettingsQuick" Margin="0,0,8,0"/>
-                    <Image x:Name="image" Width="25" Height="25" Margin="0,0,2,0" Cursor="Hand" ToolTip="Display settings / monitor information"
-                           Source="/images/monitor-50xw.png" MouseLeftButtonUp="Image_Display_MouseLeftButtonUp" VerticalAlignment="Center"/>
+                    <Button Content="+ Import wallpaper" Style="{StaticResource AMPrimaryButton}" Click="Button_Click_InstallWallpaper" Margin="0,0,15,0" ToolTip="Import a supported wallpaper file"/>
+                    <Image x:Name="image" Width="24" Height="24" Margin="0,0,2,0" Cursor="Hand"
+                           ToolTip="Display layout and monitor information" Source="/images/monitor-50xw.png"
+                           MouseLeftButtonUp="Image_Display_MouseLeftButtonUp" VerticalAlignment="Center"/>
                 </StackPanel>
             </Grid>
         </Border>

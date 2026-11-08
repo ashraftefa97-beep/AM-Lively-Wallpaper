@@ -110,4 +110,47 @@
                 <Setter Property="Foreground" Value="White"/>
             </Style>
 
+            <!-- Dashboard tile: only AM wallpaper type chooser uses this template. Tile Click handlers are kept. -->
+            <Style x:Key="AMWallpaperTile" TargetType="{x:Type Controls:Tile}">
+                <Setter Property="Width" Value="155"/>
+                <Setter Property="Height" Value="118"/>
+                <Setter Property="Margin" Value="0,0,12,12"/>
+                <Setter Property="Padding" Value="12"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Foreground" Value="{DynamicResource AMText}"/>
+                <Setter Property="Background" Value="{DynamicResource AMSurface}"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource AMBorder}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="Template">
+                  <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Controls:Tile}">
+                      <Border x:Name="TileSurface" Background="{TemplateBinding Background}" CornerRadius="12"
+                              BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                              SnapsToDevicePixels="True" Padding="14">
+                        <Grid>
+                          <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                          <ContentPresenter Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                          <TextBlock Grid.Row="1" Text="{TemplateBinding Title}" Foreground="{DynamicResource AMText}"
+                                     TextTrimming="CharacterEllipsis" FontSize="13" FontWeight="SemiBold"/>
+                        </Grid>
+                      </Border>
+                      <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                          <Setter TargetName="TileSurface" Property="BorderBrush" Value="{DynamicResource AMAccent}"/>
+                          <Setter TargetName="TileSurface" Property="Background" Value="{DynamicResource AMHover}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                          <Setter TargetName="TileSurface" Property="Opacity" Value="0.72"/>
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                          <Setter TargetName="TileSurface" Property="BorderBrush" Value="{DynamicResource AMAccent}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                          <Setter TargetName="TileSurface" Property="Opacity" Value="0.35"/>
+                        </Trigger>
+                      </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                  </Setter.Value>
+                </Setter>
+            </Style>
 </ResourceDictionary>

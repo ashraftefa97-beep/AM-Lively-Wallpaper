@@ -1,0 +1,12 @@
+.vs/
+**/bin/
+**/obj/
+src/livelywpf/packages/
+dist/
+*.user
+*.suo
+__pycache__/
+
+# Upstream preview GIFs are not application inputs. Tutorial videos are hash-verified on build.
+resources/
+src/livelywpf/livelywpf/docs/help_vid_*.mp4

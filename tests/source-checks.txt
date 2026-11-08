@@ -1,0 +1,67 @@
+PASS pinned official release baseline
+PASS original MS-PL license preserved byte-for-byte
+PASS dependency pins unchanged: src/livelywpf/livelySubProcess/packages.config
+PASS dependency pins unchanged: src/livelywpf/livelywpf/packages.config
+PASS framework unchanged: livelySubProcess.csproj
+PASS framework unchanged: livelywpf.csproj
+PASS all XAML, resources and projects parse as XML
+PASS C# syntax: src/livelywpf/livelySubProcess/Program.cs
+PASS C# syntax: src/livelywpf/livelywpf/App.xaml.cs
+PASS C# syntax: src/livelywpf/livelywpf/MainWindow.xaml.cs
+PASS C# syntax: src/livelywpf/livelywpf/GlobalSuppressions.cs
+PASS C# syntax: src/livelywpf/livelySubProcess/Properties/AssemblyInfo.cs
+PASS C# syntax: src/livelywpf/livelywpf/save/SharedBitmapSource.cs
+PASS C# syntax: src/livelywpf/livelywpf/save/SystemInfo.cs
+PASS C# syntax: src/livelywpf/livelywpf/save/CefProperties.cs
+PASS C# syntax: src/livelywpf/livelywpf/save/NullConverterXaml.cs
+PASS C# syntax: src/livelywpf/livelywpf/save/SaveData.cs
+PASS C# syntax: src/livelywpf/livelywpf/dialogues_wpcreator/Page_Ext.xaml.cs
+PASS C# syntax: src/livelywpf/livelywpf/dialogues_wpcreator/CreateWallpaperAddedFiles.xaml.cs
+PASS C# syntax: src/livelywpf/livelywpf/dialogues_wpcreator/CreateWallpaper.xaml.cs
+PASS C# syntax: src/livelywpf/livelywpf/Properties/Settings.Designer.cs
+PASS C# syntax: src/livelywpf/livelywpf/Properties/Resources.Designer.cs
+PASS C# syntax: src/livelywpf/livelywpf/Properties/Resources.zh.Designer.cs
+PASS C# syntax: src/livelywpf/livelywpf/Properties/Icons.Designer.cs
+PASS C# syntax: src/livelywpf/livelywpf/Properties/AssemblyInfo.cs
+PASS C# syntax: src/livelywpf/livelywpf/preview/QuickPreview.xaml.cs
+PASS C# syntax: src/livelywpf/livelywpf/preview/PreviewWallpaper.xaml.cs
+PASS C# syntax: src/livelywpf/livelywpf/dialogues_general/AppUpdate.xaml.cs
+PASS C# syntax: src/livelywpf/livelywpf/dialogues_general/ApplicationRuleDialogWindow.xaml.cs
+PASS C# syntax: src/livelywpf/livelywpf/dialogues_general/Changelog.xaml.cs
+PASS C# syntax: src/livelywpf/livelywpf/dialogues_general/HelpWindow.xaml.cs
+PASS C# syntax: src/livelywpf/livelywpf/wp_windows/GifWindow.xaml.cs
+PASS C# syntax: src/livelywpf/livelywpf/wp_windows/Mediakit.xaml.cs
+PASS C# syntax: src/livelywpf/livelywpf/wp_windows/MediaPlayer.xaml.cs
+PASS C# syntax: src/livelywpf/livelywpf/wp_lib/NativeMethods.cs
+PASS C# syntax: src/livelywpf/livelywpf/wp_lib/Pause.cs
+PASS C# syntax: src/livelywpf/livelywpf/wp_lib/RawInputDX.xaml.cs
+PASS C# syntax: src/livelywpf/livelywpf/wp_lib/VolumeMixer.cs
+PASS C# syntax: src/livelywpf/livelywpf/wp_lib/SetupDesktop.cs
+PASS C# syntax: src/livelywpf/livelywpf/display/DisplayLayoutWindow.xaml.cs
+PASS C# syntax: src/livelywpf/livelywpf/display/DisplayID.xaml.cs
+PASS C# syntax: src/livelywpf/livelywpf/display/DpiHelper.cs
+PASS C# syntax: src/livelywpf/livelywpf/display/DisplaySelectWindow.xaml.cs
+PASS C# syntax: src/livelywpf/livelywpf/ProcessManager/SafetyPolicy.cs
+PASS C# syntax: src/livelywpf/livelywpf/ProcessManager/ProcessManagerView.xaml.cs
+PASS C# syntax: src/livelywpf/livelywpf/ProcessManager/NativeTrust.cs
+PASS C# syntax: src/livelywpf/livelywpf/ProcessManager/ProcessEngine.cs
+PASS C# syntax: src/livelywpf/livelywpf/Lively/Helpers/ImageOperations.cs
+PASS C# syntax: src/livelywpf/livelywpf/Lively/Helpers/FileOperations.cs
+PASS C# syntax: src/livelywpf/livelywpf/Lively/Helpers/WindowOperations.cs
+PASS C# syntax: src/livelywpf/livelywpf/Lively/Helpers/UpdaterGit.cs
+PASS C# syntax: src/livelywpf/livelywpf/Lively/Helpers/CaptureWindow.cs
+PASS new source included: SafetyPolicy.cs
+PASS new source included: ProcessManagerView.xaml.cs
+PASS new source included: NativeTrust.cs
+PASS new source included: ProcessEngine.cs
+PASS wallpaper subsystem preserved: wp_lib/Pause.cs
+PASS wallpaper subsystem preserved: wp_lib/NativeMethods.cs
+PASS wallpaper subsystem preserved: save/CefProperties.cs
+PASS wallpaper subsystem preserved: preview/PreviewWallpaper.xaml.cs
+PASS playback engine changed only for renamed executable identity
+PASS no permanent service startup modification
+PASS force entrypoint requires a recorded graceful attempt
+PASS no process-tree termination
+PASS PID reuse guard exists at action boundary
+PASS recovery journal is flushed and atomically replaced
+PASS: 66 source checks; Windows build/runtime not covered.

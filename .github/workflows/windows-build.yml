@@ -1,0 +1,81 @@
+name: Build Windows EXE
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: windows-build-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: windows-2022
+    timeout-minutes: 50
+    defaults:
+      run:
+        shell: powershell
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install original-generation build tools (VS 2019)
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $bootstrapper = Join-Path $env:RUNNER_TEMP 'vs_buildtools_2019.exe'
+          Invoke-WebRequest 'https://aka.ms/vs/16/release/vs_buildtools.exe' -OutFile $bootstrapper -UseBasicParsing
+          $signature = Get-AuthenticodeSignature $bootstrapper
+          if ($signature.Status -ne 'Valid' -or $signature.SignerCertificate.Subject -notmatch 'Microsoft Corporation') { throw 'Invalid Microsoft build-tools signature' }
+          $arguments = '--quiet --wait --norestart --nocache --installPath C:\AM-BuildTools2019 --add Microsoft.VisualStudio.Workload.ManagedDesktopBuildTools --add Microsoft.Net.Component.4.7.2.TargetingPack --add Microsoft.Net.Component.4.7.2.SDK'
+          $process = Start-Process $bootstrapper -ArgumentList $arguments -Wait -PassThru
+          if ($process.ExitCode -notin @(0,3010)) { throw "VS 2019 install failed: $($process.ExitCode)" }
+          $msbuild = 'C:\AM-BuildTools2019\MSBuild\Current\Bin\MSBuild.exe'
+          if (!(Test-Path $msbuild)) { throw 'VS 2019 MSBuild not installed' }
+          & $msbuild -version
+          if ($LASTEXITCODE -ne 0) { throw 'MSBuild verification failed' }
+      - name: Download pinned NuGet and Inno Setup
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Invoke-WebRequest 'https://dist.nuget.org/win-x86-commandline/v5.8.1/nuget.exe' -OutFile "$env:RUNNER_TEMP\nuget.exe" -UseBasicParsing
+          $inno = "$env:RUNNER_TEMP\innosetup-6.2.2.exe"
+          Invoke-WebRequest 'https://github.com/jrsoftware/issrc/releases/download/is-6_2_2/innosetup-6.2.2.exe' -OutFile $inno -UseBasicParsing
+          if ((Get-FileHash $inno -Algorithm SHA256).Hash -ne '8117D10D00A2AD33A1390978EA3872861C330E087914410A6377B22C4C5B8563') { throw 'Inno Setup checksum mismatch' }
+          $process = Start-Process $inno -ArgumentList '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP- /DIR=C:\AM-Inno622' -Wait -PassThru
+          if ($process.ExitCode -ne 0) { throw "Inno Setup install failed: $($process.ExitCode)" }
+      - name: Get exact upstream v0.9.6.0 runtime
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $archive = "$env:RUNNER_TEMP\lively0960.zip"
+          # rocksdanister/lively currently redirects this historical release to lively-community/lively.
+          Invoke-WebRequest 'https://github.com/lively-community/lively/releases/download/v0.9.6.0/lively_portable_x86_full_v0960.zip' -OutFile $archive -UseBasicParsing
+          if ((Get-Item $archive).Length -ne 120774111) { throw 'Unexpected original release asset size' }
+          Get-FileHash $archive -Algorithm SHA256 | Format-List
+          Expand-Archive $archive "$env:RUNNER_TEMP\lively0960"
+          $original = @(Get-ChildItem "$env:RUNNER_TEMP\lively0960" -Filter livelywpf.exe -Recurse -File)
+          if ($original.Count -ne 1) { throw 'Expected exactly one original application' }
+          "AM_ORIGINAL=$($original[0].DirectoryName)" | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Build, test and package x86
+        run: |
+          .\build\Build-Windows.ps1 -OriginalPortable $env:AM_ORIGINAL -NuGet "$env:RUNNER_TEMP\nuget.exe" -MSBuild 'C:\AM-BuildTools2019\MSBuild\Current\Bin\MSBuild.exe' -Inno 'C:\AM-Inno622\ISCC.exe' -Installer
+      - name: Read-only Windows process smoke test
+        run: |
+          .\build\Test-Snapshot.ps1 -Compiler 'C:\AM-BuildTools2019\MSBuild\Current\Bin\Roslyn\csc.exe'
+      - name: Upload EXE installer and portable app
+        uses: actions/upload-artifact@v4
+        with:
+          name: AM-Lively-Wallpaper-Win81-x86-${{ github.run_number }}
+          path: |
+            dist/AM-Lively-Wallpaper-Setup-x86.exe
+            dist/portable/
+            dist/runtime-sha256.csv
+          if-no-files-found: error
+          retention-days: 30
+      - name: Upload build diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: AM-Lively-build-diagnostics-${{ github.run_number }}
+          path: |
+            dist/*.binlog
+            dist/*.log
+            ${{ runner.temp }}/dd_*.log
+          if-no-files-found: ignore
+          retention-days: 7

@@ -50,8 +50,33 @@ jobs:
           }
           Invoke-RetryDownload 'https://dist.nuget.org/win-x86-commandline/v5.8.1/nuget.exe' "$env:RUNNER_TEMP\nuget.exe"
           $inno = "$env:RUNNER_TEMP\innosetup-6.2.2.exe"
-          Invoke-RetryDownload 'https://github.com/jrsoftware/issrc/releases/download/is-6_2_2/innosetup-6.2.2.exe' $inno
-          if ((Get-FileHash $inno -Algorithm SHA256).Hash -ne '8117D10D00A2AD33A1390978EA3872861C330E087914410A6377B22C4C5B8563') { throw 'Inno Setup checksum mismatch' }
+          $innoSHA = '8117D10D00A2AD33A1390978EA3872861C330E087914410A6377B22C4C5B8563'
+          # Primary mirror is maintained by the Inno Setup publisher. GitHub is only a fallback.
+          # Never accept a file from either host unless it matches our pinned digest.
+          $urls = @(
+            'https://files.jrsoftware.org/is/6/innosetup-6.2.2.exe',
+            'https://github.com/jrsoftware/issrc/releases/download/is-6_2_2/innosetup-6.2.2.exe'
+          )
+          $verified = (Test-Path $inno) -and ((Get-FileHash $inno -Algorithm SHA256).Hash -eq $innoSHA)
+          if (-not $verified) {
+            foreach ($url in $urls) {
+              for ($attempt = 1; $attempt -le 3; $attempt++) {
+                try {
+                  Invoke-WebRequest -Uri $url -OutFile $inno -UseBasicParsing -TimeoutSec 240
+                  if ((Get-FileHash $inno -Algorithm SHA256).Hash -ne $innoSHA) { throw 'Downloaded Inno Setup checksum mismatch' }
+                  Write-Host "Verified Inno Setup 6.2.2 from $url"
+                  $verified = $true
+                  break
+                } catch {
+                  Remove-Item $inno -Force -ErrorAction SilentlyContinue
+                  Write-Warning "Inno Setup download failed (attempt $attempt): $($_.Exception.Message)"
+                  if ($attempt -lt 3) { Start-Sleep -Seconds (10 * $attempt) }
+                }
+              }
+              if ($verified) { break }
+            }
+          }
+          if (-not $verified) { throw 'Inno Setup 6.2.2 could not be downloaded and checksum-verified from either official source.' }
           $process = Start-Process $inno -ArgumentList '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP- /DIR=C:\AM-Inno622' -Wait -PassThru
           if ($process.ExitCode -ne 0) { throw "Inno Setup install failed: $($process.ExitCode)" }
       - name: Restore verified legacy runtime from cache

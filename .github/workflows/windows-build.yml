@@ -54,21 +54,63 @@ jobs:
           if ((Get-FileHash $inno -Algorithm SHA256).Hash -ne '8117D10D00A2AD33A1390978EA3872861C330E087914410A6377B22C4C5B8563') { throw 'Inno Setup checksum mismatch' }
           $process = Start-Process $inno -ArgumentList '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP- /DIR=C:\AM-Inno622' -Wait -PassThru
           if ($process.ExitCode -ne 0) { throw "Inno Setup install failed: $($process.ExitCode)" }
+      - name: Restore verified legacy runtime from cache
+        id: legacy-runtime
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/lively0960.zip
+          key: lively-0.9.6.0-x86-72BC44092887320897D2AF7A43BFF63CD0998E19A4C5A3ABFC6B930ADE776D84
       - name: Get exact upstream v0.9.6.0 runtime
         run: |
           $ErrorActionPreference = 'Stop'
-          $archive = "$env:RUNNER_TEMP\lively0960.zip"
-          # rocksdanister/lively currently redirects this historical release to lively-community/lively.
-          Invoke-WebRequest 'https://github.com/lively-community/lively/releases/download/v0.9.6.0/lively_portable_x86_full_v0960.zip' -OutFile $archive -UseBasicParsing
-          if ((Get-Item $archive).Length -ne 120774111) { throw 'Unexpected original release asset size' }
-          # SHA256 observed from the exact official v0.9.6.0 release asset.
-          $sha256 = (Get-FileHash $archive -Algorithm SHA256).Hash
-          if ($sha256 -ne '72BC44092887320897D2AF7A43BFF63CD0998E19A4C5A3ABFC6B930ADE776D84') { throw 'Original portable SHA256 mismatch' }
-          Write-Host "Verified official portable SHA256: $sha256"
-          Expand-Archive $archive "$env:RUNNER_TEMP\lively0960"
+          $archive = Join-Path $env:RUNNER_TEMP 'lively0960.zip'
+          $expectedSize = 120774111
+          $expectedSha256 = '72BC44092887320897D2AF7A43BFF63CD0998E19A4C5A3ABFC6B930ADE776D84'
+          function Test-OfficialArchive {
+            if (!(Test-Path $archive)) { return $false }
+            if ((Get-Item $archive).Length -ne $expectedSize) { return $false }
+            return (Get-FileHash $archive -Algorithm SHA256).Hash -eq $expectedSha256
+          }
+          # A cache is never trusted without verifying both exact size and SHA-256.
+          if (!(Test-OfficialArchive)) {
+            Remove-Item $archive -Force -ErrorAction SilentlyContinue
+            $downloaded = $false
+            $urls = @(
+              'https://github.com/lively-community/lively/releases/download/v0.9.6.0/lively_portable_x86_full_v0960.zip',
+              'https://github.com/rocksdanister/lively/releases/download/v0.9.6.0/lively_portable_x86_full_v0960.zip'
+            )
+            foreach ($url in $urls) {
+              for ($attempt = 1; $attempt -le 4; $attempt++) {
+                try {
+                  Write-Host "Fetching official legacy release (attempt $attempt)"
+                  Invoke-WebRequest -Uri $url -OutFile $archive -UseBasicParsing -TimeoutSec 300
+                  if (!(Test-OfficialArchive)) { throw 'Download was incomplete or failed SHA-256 verification' }
+                  $downloaded = $true
+                  break
+                } catch {
+                  Remove-Item $archive -Force -ErrorAction SilentlyContinue
+                  Write-Warning "Legacy release download failed: $($_.Exception.Message)"
+                  if ($attempt -lt 4) { Start-Sleep -Seconds (12 * $attempt) }
+                }
+              }
+              if ($downloaded) { break }
+            }
+            if (!$downloaded) { throw 'Official v0.9.6.0 release could not be retrieved and verified after retries.' }
+          } else {
+            Write-Host 'Using hash-verified original runtime from GitHub Actions cache.'
+          }
+          if (!(Test-OfficialArchive)) { throw 'Official legacy runtime SHA-256 verification failed.' }
+          Write-Host "Verified SHA256: $expectedSha256"
+          Expand-Archive -LiteralPath $archive -DestinationPath "$env:RUNNER_TEMP\lively0960"
           $original = @(Get-ChildItem "$env:RUNNER_TEMP\lively0960" -Filter livelywpf.exe -Recurse -File)
           if ($original.Count -ne 1) { throw 'Expected exactly one original application' }
           "AM_ORIGINAL=$($original[0].DirectoryName)" | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Cache verified legacy release after download
+        if: steps.legacy-runtime.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/lively0960.zip
+          key: lively-0.9.6.0-x86-72BC44092887320897D2AF7A43BFF63CD0998E19A4C5A3ABFC6B930ADE776D84
       - name: Build, test and package x86
         run: |
           .\build\Build-Windows.ps1 -OriginalPortable $env:AM_ORIGINAL -NuGet "$env:RUNNER_TEMP\nuget.exe" -MSBuild 'C:\AM-BuildTools2019\MSBuild\Current\Bin\MSBuild.exe' -Inno 'C:\AM-Inno622\ISCC.exe' -Installer
